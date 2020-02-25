@@ -11,6 +11,11 @@ Also, some libraries must be installed:
 
 ```
 pip3 install PyPDF2
+pip3 install tabula-py
+```
+For p2ttk
+```
+pip3 install sspipe
 ```
 
 ## Usage
