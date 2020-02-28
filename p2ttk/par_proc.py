@@ -1,6 +1,6 @@
 from io import StringIO
-from p2ttk import par_label, pre_proc, p2t_constants
-from p2ttk.par_qual import Paragraph, ParagraphQualif, Document, Topic
+import par_label, pre_proc, p2t_constants
+from par_qual import Paragraph, ParagraphQualif, Document, Topic
 import re
 import json
 import pymongo

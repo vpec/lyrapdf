@@ -3,7 +3,7 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from io import StringIO
-from p2ttk import pre_proc, p2t_constants
+import pre_proc, p2t_constants
 
 def convert_pdf_to_txt(path, generate_output):
     """ 

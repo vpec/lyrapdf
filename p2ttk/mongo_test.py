@@ -5,15 +5,15 @@ el primer y segundo procesado de los textos que se asocian al mismo.
 from sspipe import p
 import re
 # Se importa la clase asociada al etiquetado
-from p2ttk.par_label import *
+from par_label import *
 from os import listdir
 from os.path import isfile, join
 
 # Se importan el resto de módulos del programa
-import p2ttk.txt_ext,p2ttk.pre_proc,p2ttk.par_proc
+import txt_ext, pre_proc, par_proc
 
 
-dir_entrada = 'ficheros_entrada'         # Directorio a extraer archivos PDF
+dir_entrada = '../pdfppl/resources'         # Directorio a extraer archivos PDF
 PDF_path_actual  = ''                    # Path del archivo a procesar   
 etiquetado = ParLabel(dir_entrada)
 

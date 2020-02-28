@@ -16,6 +16,9 @@ pip3 install tabula-py
 For p2ttk
 ```
 pip3 install sspipe
+pip3 install pdfminer
+pip3 install nltk
+pip3 install pymongo
 ```
 
 ## Usage

@@ -36,7 +36,7 @@ from nltk.corpus import stopwords
 from nltk.util import ngrams
 from collections import Counter
 from unicodedata import normalize
-from p2ttk  import p2t_constants
+import p2t_constants
 
 
 #    fichero_text_append('ficheros_salida/salida_ConteoBigramas.txt', "Fin del top 100 ---") 
