@@ -105,10 +105,11 @@ def gestion_procesado():
 
     for PDF_path_actual in lista:
         print('Extrayendo texto de este fichero: ',archivos[i])
-        etiquetado.set_path(archivos[i])
-        etiquetado.set_document(archivos[i].split(".")[0])
+        # etiquetado.set_path(archivos[i])
+        # etiquetado.set_document(archivos[i].split(".")[0])
         
-        texto_extraido = p2ttk.txt_ext.convert_pdf_to_txt(PDF_path_actual)
+        
+        extracted_text = p2ttk.txt_ext.convert_pdf_to_txt(PDF_path_actual)
         nombre_archivo = archivos[i]
         
         print("Extracción de : "+ archivos[i] + " terminada, iniciando procesado")
