@@ -25,7 +25,7 @@ pip3 install pymongo
 
 From git root directory, run:
 ```
-python3 -m pdfppl
+python3 -m pdfppl pdfppl/resources
 ```
 
 ## Documentation

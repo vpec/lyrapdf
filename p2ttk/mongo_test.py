@@ -15,7 +15,7 @@ import txt_ext, pre_proc, par_proc
 
 dir_entrada = '../pdfppl/resources'         # Directorio a extraer archivos PDF
 PDF_path_actual  = ''                    # Path del archivo a procesar   
-etiquetado = ParLabel(dir_entrada)
+etiquetado = ParLabel(dir_entrada, "GPC_465_Insomnio_Lain_Entr_compl.pdf")
 
 def mostrar_estadisticas():
     '''
