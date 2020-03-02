@@ -43,7 +43,7 @@ def primer_procesado(text, output_dir, file_name):
         :return:        String con el tratamiento del texto y saca un fichero "salida_primer_procesado" en
                         "ficheros_entrada"
     '''
-  
+    
     texto_procesado = ( pre_proc.delete_0C(text)            | p(pre_proc.delete_false_headers)
                                                                 | p(pre_proc.label_lists)
                                                                 | p(pre_proc.delete_dash)
@@ -56,6 +56,7 @@ def primer_procesado(text, output_dir, file_name):
                                                                 | p(pre_proc.relabel_ol)
                                                                 | p(pre_proc.fit_titles)
                        )
+    
                                                 
     pre_proc.create_text_file(output_dir + "/first_" + file_name + ".txt", texto_procesado)
     return texto_procesado+'\n'  
