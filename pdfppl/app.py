@@ -4,7 +4,61 @@ from pdfppl import extractionTabula as e2
 from os.path import isfile, join, exists, abspath
 from os import listdir, makedirs
 from pdfppl import txt_ext
+from sspipe import p
+from pdfppl import pre_proc
+import ntpath
 
+def path_leaf(path):
+    head, tail = ntpath.split(path)
+    return tail or ntpath.basename(head)
+
+def segundo_procesado(text):
+    '''
+        Se encarga de la gestionar los parrafos, extraerlos y añadirles una cabecera y una cola
+        para identificarlos teniendo la siguiente estructura:
+        ..  note::
+            Ejemplo de output del segundo procesado:
+
+            <idParrafo><NombreDocumento>
+            TEXTOTEXTOTEXTO
+            <idParrafo><NombreDocumento\>
+        :return:    Un string con todos los párrafos etiquetados y además saca la salida al fichero
+                    "salida_segundo_procesado" en la carpeta "ficheros_salida"
+
+    '''
+
+    texto_procesado = (p2ttk.par_proc.extraccion_parrafos(text,etiquetado) | p(p2ttk.par_proc.detectar_headers))
+    p2ttk.pre_proc.fichero_text('ficheros_salida/salida_segundo_procesado.txt',texto_procesado)  
+    return texto_procesado
+
+def primer_procesado(text, output_dir, file_name):
+    '''
+        - Elimina dashes(guiones de texto) y caracteres raros en el texto
+        - Espacios en blanco dobles
+        - Saltos de linea en palabras inacabadas y lineas del mismo parrafo
+          elimina carácteres no identificados 
+
+
+        :param text:    String a realizar el procesado
+        :return:        String con el tratamiento del texto y saca un fichero "salida_primer_procesado" en
+                        "ficheros_entrada"
+    '''
+  
+    texto_procesado = ( pre_proc.delete_0C(text)            | p(pre_proc.delete_false_headers)
+                                                                | p(pre_proc.label_lists)
+                                                                | p(pre_proc.delete_dash)
+                                                                | p(pre_proc.delete_tabs)
+                                                                | p(pre_proc.delete_whitespaces)
+                                                                | p(pre_proc.delete_jumps)
+                                                                | p(pre_proc.label_ordered_lists)
+                                                                | p(pre_proc.process_lists)
+                                                                | p(pre_proc.label_headers)
+                                                                | p(pre_proc.relabel_ol)
+                                                                | p(pre_proc.fit_titles)
+                       )
+                                                
+    pre_proc.create_text_file(output_dir + "/first_" + file_name + ".txt", texto_procesado)
+    return texto_procesado+'\n'  
 
 def get_listPDF(input_dir):
     '''
@@ -39,12 +93,15 @@ def run():
             #  etiquetado.set_document(archivos[i].split(".")[0])
             
             print(input_dir + "/output")
-            texto_extraido = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output")
+            texto_extraido = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output", path_leaf(pdf_path))
             # nombre_archivo = archivos[i]
             
             print("Extracción de : "+ pdf_path + " terminada, iniciando procesado")
+            texto_procesado = primer_procesado(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
+            '''
             texto_procesado = (      primer_procesado(texto_extraido) | p(segundo_procesado) 
                                 )
+            '''
             texto_total = texto_total + texto_procesado + '\n\n'
             
             i+=1

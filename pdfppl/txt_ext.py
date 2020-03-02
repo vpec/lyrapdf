@@ -5,7 +5,8 @@ from pdfminer.pdfpage import PDFPage
 from io import StringIO
 from pdfppl import pre_proc #, p2t_constants
 
-def convert_pdf_to_txt(path, output_dir, generate_output = True):
+
+def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     """ 
         PDFMiner:                       https://pypi.org/project/pdfminer/ 
             - Documentación:            https://media.readthedocs.org/pdf/pdfminer-docs/latest/pdfminer-docs.pdf 
@@ -29,8 +30,6 @@ def convert_pdf_to_txt(path, output_dir, generate_output = True):
     _pagenos=set()           # Paginas a extraer separadas por comas
     #lista_paginas = []
 
-    print(output_dir + "/salida_ExtraccionTexto.txt")
-    pre_proc.create_text_file(output_dir + "/salida_ExtraccionTexto.txt",'') # Vaciamos el fichero
 
     for numero,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
         # Descomentar la parte de abajo si se desea una página en concreto
@@ -54,7 +53,7 @@ def convert_pdf_to_txt(path, output_dir, generate_output = True):
 
     _text = _retstr.getvalue() + '\n\n'
     if (generate_output) :
-        pre_proc.create_text_file(output_dir + '/salida_ExtraccionTexto.txt', _text) # Insertamos en el fichero el texto extraido
+        pre_proc.create_text_file(output_dir + "/simple_" + file_name + ".txt", _text) # Insertamos en el fichero el texto extraido
 
     _file.close()
     _device.close()
