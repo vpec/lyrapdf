@@ -81,9 +81,8 @@ def delete_jumps(text):
                             la letra final seguida de un salto de linea y 
                             comenzando por otra letra minúscula.     
     '''
-    #p1 = re.compile(r'(\w|,|\)| )\n+([a-z]|\(|\¿|\")', re.MULTILINE | re.DOTALL |re.UNICODE)
-    p1 = re.compile(r'(\w|,|\)) *\n+([a-z]|\(|\¿|\")', re.MULTILINE | re.DOTALL |re.UNICODE)
-    text2 = p1.sub(r'\1\2',text)
+    p1 = re.compile(r'((\w|, |\)) *)\n+([a-z]|\(|\¿|\")', re.MULTILINE | re.DOTALL |re.UNICODE)
+    text2 = p1.sub(r'\1\3',text)
     return text2
 
 
