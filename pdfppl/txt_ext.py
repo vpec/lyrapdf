@@ -17,7 +17,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _rsrcmgr = PDFResourceManager()
     _retstr = StringIO()
     _codec = 'utf-8'
-    _laparams = LAParams()
+    _laparams = LAParams(detect_vertical=True)
     #  _device = TextConverter(_rsrcmgr, _retstr, codec=_codec,laparams=_laparams)
     _device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
     _file = open(path, 'rb')
