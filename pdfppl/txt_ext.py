@@ -29,6 +29,11 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
 
     _pagenos=set()           # Paginas a extraer separadas por comas
     #lista_paginas = []
+    _rsrcmgr_default = PDFResourceManager()
+    _retstr_default = StringIO()
+    _laparams_default = LAParams() # detect_vertical=False
+    _device_default = TextConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams)
+    _interpreter_default = PDFPageInterpreter(_rsrcmgr_default, _device_default)
 
 
     for numero,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
@@ -38,6 +43,18 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         print("Extracting page: ", numero)
         #interpreter.process_page(page)
         _interpreter.process_page(page)
+        '''
+        print(len(_retstr.getvalue()))
+
+        _retstr.truncate(0)
+        _retstr.seek(0)
+
+        _interpreter_default.process_page(page)
+        print(len(_retstr_default.getvalue()))
+
+        _retstr_default.truncate(0)
+        _retstr_default.seek(0)
+        '''
         
         '''
             interpreter.process_page(page)

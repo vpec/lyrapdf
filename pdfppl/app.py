@@ -89,6 +89,9 @@ def run():
 
         for pdf_path in pdf_list:
             print('Extracting text from: ', pdf_path)
+
+            #e2.extract(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+            
             
             #  etiquetado.set_path(archivos[i])
             #  etiquetado.set_document(archivos[i].split(".")[0])
@@ -99,13 +102,14 @@ def run():
             
             print("Extracción de : "+ pdf_path + " terminada, iniciando procesado")
             texto_procesado = primer_procesado(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
-            '''
-            texto_procesado = (      primer_procesado(texto_extraido) | p(segundo_procesado) 
-                                )
-            '''
+            
+            #texto_procesado = (      primer_procesado(texto_extraido) | p(segundo_procesado) 
+            #                    )
+            
             texto_total = texto_total + texto_procesado + '\n\n'
             
             i+=1
+            
             
         # mostrar_estadisticas()
         # return texto_total
