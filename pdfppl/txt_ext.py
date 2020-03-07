@@ -4,6 +4,10 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from io import StringIO
 from pdfppl import pre_proc #, p2t_constants
+import re
+
+def countRotated(text):
+    return len(re.findall('\w\n\w', text))
 
 
 def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
@@ -32,29 +36,52 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _rsrcmgr_default = PDFResourceManager()
     _retstr_default = StringIO()
     _laparams_default = LAParams() # detect_vertical=False
-    _device_default = TextConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams)
+    _device_default = TextConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams_default)
     _interpreter_default = PDFPageInterpreter(_rsrcmgr_default, _device_default)
 
+    _text = ""
 
-    for numero,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
+
+    for number,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
         # Descomentar la parte de abajo si se desea una página en concreto
         # añadir "numero al retorno del for"
         # for numero,page in enumerate(PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, check_extractable=True)
-        print("Extracting page: ", numero)
+        print("Extracting page: ", number)
         #interpreter.process_page(page)
-        _interpreter.process_page(page)
-        '''
-        print(len(_retstr.getvalue()))
 
+        # Analyze with detect_vertical
+        _interpreter.process_page(page)
+        
+        print(countRotated(_retstr.getvalue()))
+        num_occ = countRotated(_retstr.getvalue()) + 1
+
+        # Analyze without detect_vertical
+        _interpreter_default.process_page(page)
+        print(countRotated(_retstr_default.getvalue()))
+        
+        num_occ_default = countRotated(_retstr_default.getvalue()) + 1
+
+        
+
+        if(num_occ_default / num_occ > 5 and num_occ_default > 70):
+            print("Rotated")
+            # Clean buffer
+            _retstr.truncate(0)
+            _retstr.seek(0)
+            # Rotate page
+            page.rotate = (page.rotate+180) % 360
+            # Analyze again with detect_vertical
+            _interpreter.process_page(page)
+
+        # Append new text
+        _text += _retstr.getvalue()
+        
+        # Clean buffers
         _retstr.truncate(0)
         _retstr.seek(0)
-
-        _interpreter_default.process_page(page)
-        print(len(_retstr_default.getvalue()))
-
         _retstr_default.truncate(0)
         _retstr_default.seek(0)
-        '''
+
         
         '''
             interpreter.process_page(page)
@@ -68,7 +95,8 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
 
     print("finishing")
 
-    _text = _retstr.getvalue() + '\n\n'
+    #  _text = _retstr.getvalue() + '\n\n'
+    _text += '\n\n'
     if (generate_output) :
         pre_proc.create_text_file(output_dir + "/simple_" + file_name + ".txt", _text) # Insertamos en el fichero el texto extraido
 
