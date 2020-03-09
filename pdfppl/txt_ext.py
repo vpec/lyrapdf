@@ -5,6 +5,8 @@ from pdfminer.pdfpage import PDFPage
 from io import StringIO
 from pdfppl import pre_proc #, p2t_constants
 import re
+import time
+from multiprocessing import Process
 
 def countRotated(text):
     return len(re.findall('\w\n\w', text))
@@ -49,27 +51,39 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         print("Extracting page: ", number)
         #interpreter.process_page(page)
 
+        t_start = time.process_time()
         # Analyze with detect_vertical
         _interpreter.process_page(page)
+        t_elapsed = time.process_time() - t_start
+        print(t_elapsed)
         
         print(countRotated(_retstr.getvalue()))
         num_occ = countRotated(_retstr.getvalue()) + 1
 
+        #action_process = Process(target=_interpreter_default.process_page, args=page)
+        t_start2 = time.process_time()
         # Analyze without detect_vertical
         _interpreter_default.process_page(page)
+
+        t_elapsed2 = time.process_time() - t_start2
+        print(t_elapsed2)
+        print("diff " + str(t_elapsed2 - t_elapsed))
+        # We start the process and we block for 5 seconds.
+        #action_process.start()
+        #action_process.join(timeout=5)
         print(countRotated(_retstr_default.getvalue()))
         
         num_occ_default = countRotated(_retstr_default.getvalue()) + 1
 
         
 
-        if(num_occ_default / num_occ > 5 and num_occ_default > 70):
-            print("Rotated")
+        if(num_occ_default / num_occ > 5 and num_occ_default > 100):
+            print("Rotating")
             # Clean buffer
             _retstr.truncate(0)
             _retstr.seek(0)
             # Rotate page
-            page.rotate = (page.rotate+180) % 360
+            page.rotate = (page.rotate+90) % 360
             # Analyze again with detect_vertical
             _interpreter.process_page(page)
 
