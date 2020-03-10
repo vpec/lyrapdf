@@ -6,10 +6,15 @@ from io import StringIO
 from pdfppl import pre_proc #, p2t_constants
 import re
 import time
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 
 def countRotated(text):
     return len(re.findall('\w\n\w', text))
+
+def process_without_detect_vertical(interpreter, retstr, page, return_dict):
+    interpreter.process_page(page)
+    return_dict[0] = countRotated(retstr.getvalue()) + 1
+
 
 
 def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
@@ -65,7 +70,12 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         # Set timeout based on elapsed time using detect_vertical processing
         _timeout = 5 + t_elapsed * 10
 
-        action_process = Process(target=_interpreter_default.process_page, args=(page,))
+        # Create shared variable
+        manager = Manager()
+        return_dict = manager.dict()
+
+        #action_process = Process(target=_interpreter_default.process_page, args=(page,))
+        action_process = Process(target=process_without_detect_vertical, args=(_interpreter_default, _retstr_default, page, return_dict,))
         action_process.start()
         action_process.join(timeout=_timeout)
 
@@ -78,7 +88,8 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         else:
             # We start the process and we block for 5 seconds.
             print(countRotated(_retstr_default.getvalue()))
-            num_occ_default = countRotated(_retstr_default.getvalue()) + 1
+            # Get number of occurences
+            num_occ_default = return_dict[0]
             # Check if page needs to be rotated
             if(num_occ_default / num_occ > 5 and num_occ_default > 100):
                 rotating = True
@@ -102,16 +113,6 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         _retstr_default.truncate(0)
         _retstr_default.seek(0)
 
-        
-        '''
-            interpreter.process_page(page)
-            # Se extrae la pagina y la añadimos a la lista
-            lista_paginas.append(retstr.getvalue()+ '\n\n')
-            Preprocesado.fichero_text_append('ficheros_salida/salida_ExtraccionTexto.txt',retstr.getvalue())
-            # Limpiamos el buffer para la siguiente iteracion
-            retstr.truncate(0)
-            retstr.seek(0)
-        '''
 
     print("finishing")
 
