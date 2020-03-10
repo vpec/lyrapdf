@@ -51,6 +51,8 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         print("Extracting page: ", number)
         #interpreter.process_page(page)
 
+        rotating = False
+
         t_start = time.process_time()
         # Analyze with detect_vertical
         _interpreter.process_page(page)
@@ -60,24 +62,28 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         print(countRotated(_retstr.getvalue()))
         num_occ = countRotated(_retstr.getvalue()) + 1
 
-        #action_process = Process(target=_interpreter_default.process_page, args=page)
-        t_start2 = time.process_time()
-        # Analyze without detect_vertical
-        _interpreter_default.process_page(page)
+        # Set timeout based on elapsed time using detect_vertical processing
+        _timeout = 5 + t_elapsed * 10
 
-        t_elapsed2 = time.process_time() - t_start2
-        print(t_elapsed2)
-        print("diff " + str(t_elapsed2 - t_elapsed))
-        # We start the process and we block for 5 seconds.
-        #action_process.start()
-        #action_process.join(timeout=5)
-        print(countRotated(_retstr_default.getvalue()))
-        
-        num_occ_default = countRotated(_retstr_default.getvalue()) + 1
+        action_process = Process(target=_interpreter_default.process_page, args=(page,))
+        action_process.start()
+        action_process.join(timeout=_timeout)
 
-        
+        # If thread is still active
+        if action_process.is_alive():
+            # Terminate
+            action_process.terminate()
+            action_process.join()
+            rotating = True
+        else:
+            # We start the process and we block for 5 seconds.
+            print(countRotated(_retstr_default.getvalue()))
+            num_occ_default = countRotated(_retstr_default.getvalue()) + 1
+            # Check if page needs to be rotated
+            if(num_occ_default / num_occ > 5 and num_occ_default > 100):
+                rotating = True
 
-        if(num_occ_default / num_occ > 5 and num_occ_default > 100):
+        if(rotating):
             print("Rotating")
             # Clean buffer
             _retstr.truncate(0)

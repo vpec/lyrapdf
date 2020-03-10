@@ -58,7 +58,7 @@ def primer_procesado(text, output_dir, file_name):
                        )
     
                                                 
-    pre_proc.create_text_file(output_dir + "/first_" + file_name + ".txt", texto_procesado)
+    pre_proc.create_text_file(output_dir + "/" + file_name + ".txt", texto_procesado)
     return texto_procesado+'\n'  
 
 def get_listPDF(input_dir):
