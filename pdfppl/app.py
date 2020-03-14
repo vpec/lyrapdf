@@ -6,7 +6,9 @@ from os import listdir, makedirs
 from pdfppl import txt_ext
 from sspipe import p
 from pdfppl import pre_proc
+from pdfppl import outlines
 import ntpath
+
 
 def path_leaf(path):
     head, tail = ntpath.split(path)
@@ -95,6 +97,9 @@ def run():
             
             #  etiquetado.set_path(archivos[i])
             #  etiquetado.set_document(archivos[i].split(".")[0])
+            outlines.get_outlines_pdfminer(pdf_path)
+            
+            '''
             
             print(input_dir + "/output")
             texto_extraido = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output", path_leaf(pdf_path))
@@ -109,6 +114,7 @@ def run():
             texto_total = texto_total + texto_procesado + '\n\n'
             
             i+=1
+            '''
             
             
         # mostrar_estadisticas()
