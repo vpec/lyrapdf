@@ -1,6 +1,6 @@
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.converter import TextConverter
-from pdfminer.layout import LAParams
+from pdfminer.converter import TextConverter, PDFPageAggregator, XMLConverter
+from pdfminer.layout import LAParams, LTTextBoxHorizontal
 from pdfminer.pdfpage import PDFPage
 from io import StringIO
 from pdfppl import pre_proc #, p2t_constants
@@ -32,7 +32,19 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     #  _device = TextConverter(_rsrcmgr, _retstr, codec=_codec,laparams=_laparams)
     _device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
     _file = open(path, 'rb')
-    _interpreter = PDFPageInterpreter(_rsrcmgr, _device)
+    _aggregator = PDFPageAggregator(_rsrcmgr, laparams=_laparams)
+
+    _device_xml = XMLConverter(_rsrcmgr, _retstr, laparams=_laparams,
+                              imagewriter=None,
+                              stripcontrol=False)
+
+    _interpreter = PDFPageInterpreter(_rsrcmgr, _device_xml)
+    #_interpreter = PDFPageInterpreter(_rsrcmgr, _aggregator)
+    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device)
+
+    
+
+
     #pagina = 31           
     _password = ""           # Cambiar en caso de PDF con pass
     # maxpages = pagina       # Máximas páginas a recorrer
@@ -103,6 +115,13 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
             page.rotate = (page.rotate+90) % 360
             # Analyze again with detect_vertical
             _interpreter.process_page(page)
+
+        '''
+        layout = _aggregator.get_result()
+        for element in layout:
+            if(isinstance(element, LTTextBoxHorizontal)):
+                print(element.get_text())
+        '''
 
         # Append new text
         _text += _retstr.getvalue()
