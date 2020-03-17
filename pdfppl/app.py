@@ -100,7 +100,10 @@ def run():
             #  etiquetado.set_document(archivos[i].split(".")[0])
             
             # metadata.get_metadata_pypdf2(pdf_path)
-            txt_ext.convert_pdf_to_txt_pypdf2(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+            #txt_ext.convert_pdf_to_txt_pypdf2(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+            
+            
+            outlines.get_outlines_pypdf2(pdf_path)
 
             
             '''
