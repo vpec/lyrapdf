@@ -9,12 +9,37 @@ import re
 import time
 from multiprocessing import Process, Manager
 
+import PyPDF2
+
+
+
+
 def countRotated(text):
     return len(re.findall('\w\n\w', text))
 
 def process_without_detect_vertical(interpreter, retstr, page, return_dict):
     interpreter.process_page(page)
     return_dict[0] = countRotated(retstr.getvalue()) + 1
+
+def convert_pdf_to_txt_pypdf2(path, output_dir, file_name, generate_output = True):
+    _file = open(path, 'rb')
+    read_pdf = PyPDF2.PdfFileReader(_file)
+    number_of_pages = read_pdf.getNumPages()
+
+    _text = ""
+    
+    for page_num in range(read_pdf.numPages):
+        print("Extracting page: ", page_num)
+        try:
+            page = read_pdf.getPage(page_num)
+            _text += page.extractText()
+        except:
+            pass
+
+    if (generate_output) :
+        pre_proc.create_text_file(output_dir + "/pypdf2_raw_" + file_name + ".txt", _text) # Insertamos en el fichero el texto extraido
+
+    _file.close()
 
 
 
@@ -37,7 +62,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     '''
     _aggregator = PDFPageAggregator(_rsrcmgr, laparams=_laparams)
     '''
-    _device_html = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
+    #_device_html = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
     '''
     _device_xml = XMLConverter(_rsrcmgr, _retstr, laparams=_laparams,
                               imagewriter=None,
@@ -47,10 +72,10 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _device_tag = TagExtractor(_rsrcmgr, _retstr)
     '''
 
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device)
+    _interpreter = PDFPageInterpreter(_rsrcmgr, _device)
 
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_tag)
-    _interpreter = PDFPageInterpreter(_rsrcmgr, _device_html)
+    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_html)
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_xml)
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _aggregator)
 

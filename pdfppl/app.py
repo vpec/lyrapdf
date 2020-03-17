@@ -7,6 +7,7 @@ from pdfppl import txt_ext
 from sspipe import p
 from pdfppl import pre_proc
 from pdfppl import outlines
+from pdfppl import metadata
 import ntpath
 
 
@@ -98,8 +99,11 @@ def run():
             #  etiquetado.set_path(archivos[i])
             #  etiquetado.set_document(archivos[i].split(".")[0])
             
+            # metadata.get_metadata_pypdf2(pdf_path)
+            txt_ext.convert_pdf_to_txt_pypdf2(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+
             
-            
+            '''
             print(input_dir + "/output")
             texto_extraido = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output", path_leaf(pdf_path))
             # nombre_archivo = archivos[i]
@@ -113,6 +117,9 @@ def run():
             #texto_total = texto_total + texto_procesado + '\n\n'
             
             i+=1
+            '''
+            
+            
             
             
             
