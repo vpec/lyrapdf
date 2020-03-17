@@ -1,7 +1,8 @@
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.converter import TextConverter, PDFPageAggregator, XMLConverter
+from pdfminer.converter import TextConverter, PDFPageAggregator, XMLConverter, HTMLConverter
 from pdfminer.layout import LAParams, LTTextBoxHorizontal
 from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfdevice import TagExtractor
 from io import StringIO
 from pdfppl import pre_proc #, p2t_constants
 import re
@@ -32,15 +33,26 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     #  _device = TextConverter(_rsrcmgr, _retstr, codec=_codec,laparams=_laparams)
     _device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
     _file = open(path, 'rb')
+    
+    '''
     _aggregator = PDFPageAggregator(_rsrcmgr, laparams=_laparams)
-
+    '''
+    _device_html = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
+    '''
     _device_xml = XMLConverter(_rsrcmgr, _retstr, laparams=_laparams,
                               imagewriter=None,
                               stripcontrol=False)
 
-    _interpreter = PDFPageInterpreter(_rsrcmgr, _device_xml)
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _aggregator)
+    
+    _device_tag = TagExtractor(_rsrcmgr, _retstr)
+    '''
+
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _device)
+
+    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_tag)
+    _interpreter = PDFPageInterpreter(_rsrcmgr, _device_html)
+    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_xml)
+    #_interpreter = PDFPageInterpreter(_rsrcmgr, _aggregator)
 
     
 
@@ -138,7 +150,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     #  _text = _retstr.getvalue() + '\n\n'
     _text += '\n\n'
     if (generate_output) :
-        pre_proc.create_text_file(output_dir + "/simple_" + file_name + ".txt", _text) # Insertamos en el fichero el texto extraido
+        pre_proc.create_text_file(output_dir + "/raw_" + file_name + ".txt", _text) # Insertamos en el fichero el texto extraido
 
     _file.close()
     _device.close()
