@@ -56,13 +56,13 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _codec = 'utf-8'
     _laparams = LAParams(detect_vertical=True)
     #  _device = TextConverter(_rsrcmgr, _retstr, codec=_codec,laparams=_laparams)
-    _device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
+    #_device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
     _file = open(path, 'rb')
     
     '''
     _aggregator = PDFPageAggregator(_rsrcmgr, laparams=_laparams)
     '''
-    #_device_html = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
+    _device = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
     '''
     _device_xml = XMLConverter(_rsrcmgr, _retstr, laparams=_laparams,
                               imagewriter=None,
@@ -72,10 +72,10 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _device_tag = TagExtractor(_rsrcmgr, _retstr)
     '''
 
-    _interpreter = PDFPageInterpreter(_rsrcmgr, _device)
+    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device)
 
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_tag)
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_html)
+    _interpreter = PDFPageInterpreter(_rsrcmgr, _device)
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_xml)
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _aggregator)
 
@@ -103,79 +103,17 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         # añadir "numero al retorno del for"
         # for numero,page in enumerate(PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, check_extractable=True)
         print("Extracting page: ", number)
-        #interpreter.process_page(page)
 
-        rotating = False
-
-        t_start = time.process_time()
         # Analyze with detect_vertical
         _interpreter.process_page(page)
-        t_elapsed = time.process_time() - t_start
-        print(t_elapsed)
-        
-        print(countRotated(_retstr.getvalue()))
-        num_occ = countRotated(_retstr.getvalue()) + 1
 
-        # Set timeout based on elapsed time using detect_vertical processing
-        _timeout = 5 + t_elapsed * 10
-
-        # Create shared variable
-        manager = Manager()
-        return_dict = manager.dict()
-
-        #action_process = Process(target=_interpreter_default.process_page, args=(page,))
-        action_process = Process(target=process_without_detect_vertical, args=(_interpreter_default, _retstr_default, page, return_dict,))
-        action_process.start()
-        action_process.join(timeout=_timeout)
-
-        # If thread is still active
-        if action_process.is_alive():
-            # Terminate
-            action_process.terminate()
-            action_process.join()
-            rotating = True
-        else:
-            # We start the process and we block for 5 seconds.
-            print(countRotated(_retstr_default.getvalue()))
-            # Get number of occurences
-            num_occ_default = return_dict[0]
-            # Check if page needs to be rotated
-            if(num_occ_default / num_occ > 5 and num_occ_default > 100):
-                rotating = True
-
-        if(rotating):
-            print("Rotating")
-            # Clean buffer
-            _retstr.truncate(0)
-            _retstr.seek(0)
-            # Rotate page
-            page.rotate = (page.rotate+90) % 360
-            # Analyze again with detect_vertical
-            _interpreter.process_page(page)
-
-        '''
-        layout = _aggregator.get_result()
-        for element in layout:
-            if(isinstance(element, LTTextBoxHorizontal)):
-                print(element.get_text())
-        '''
-
-        # Append new text
-        _text += _retstr.getvalue()
-        
-        # Clean buffers
-        _retstr.truncate(0)
-        _retstr.seek(0)
-        _retstr_default.truncate(0)
-        _retstr_default.seek(0)
 
 
     print("finishing")
 
-    #  _text = _retstr.getvalue() + '\n\n'
-    _text += '\n\n'
+    _text = _retstr.getvalue()
     if (generate_output) :
-        pre_proc.create_text_file(output_dir + "/raw_" + file_name + ".txt", _text) # Insertamos en el fichero el texto extraido
+        pre_proc.create_text_file(output_dir + "/" + file_name + ".html", _text) # Insertamos en el fichero el texto extraido
 
     _file.close()
     _device.close()
