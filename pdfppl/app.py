@@ -1,6 +1,7 @@
 import sys
 from pdfppl import extractionPyPDF2 as e1
 from pdfppl import extractionTabula as e2
+from pdfppl import extraction_mupdf as e3
 from os.path import isfile, join, exists, abspath
 from os import listdir, makedirs
 from pdfppl import txt_ext
@@ -103,8 +104,10 @@ def run():
             #txt_ext.convert_pdf_to_txt_pypdf2(pdf_path, input_dir + "/output", path_leaf(pdf_path))
             
             
-            outlines.get_outlines_pypdf2(pdf_path)
+            #outlines.get_outlines_pypdf2(pdf_path)
 
+            
+            e3.extract(pdf_path)
             
             '''
             print(input_dir + "/output")

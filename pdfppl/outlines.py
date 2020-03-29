@@ -2,7 +2,8 @@
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdfdocument import PDFDocument, PDFNoOutlines
 # PyPDF2 imports
-from PyPDF2 import PdfFileReader
+#from PyPDF2 import PdfFileReader, ContentStream, TextStringObject
+#from .utils import isString, b_, u_
 
 from pprint import pprint
 
@@ -21,6 +22,10 @@ def walk(obj, fnt, emb):
     fontkeys = set(['/FontFile', '/FontFile2', '/FontFile3'])
     if '/BaseFont' in obj:
         fnt.add(obj['/BaseFont'])
+
+        print(obj['/BaseFont'])
+        print(obj.getContent)
+
     if '/FontName' in obj:
         if [x for x in fontkeys if x in obj]:# test to see if there is FontFile
             emb.add(obj['/FontName'])
@@ -39,10 +44,45 @@ def get_outlines_pypdf2(path):
     # Get destinations
     destinations = reader.getNamedDestinations()
     print(destinations)
+
+    for page in reader.pages:
+        text = u_("")
+        content = page["/Contents"].getObject()
+        if not isinstance(content, ContentStream):
+            content = ContentStream(content, self.pdf)
+        # Note: we check all strings are TextStringObjects.  ByteStringObjects
+        # are strings where the byte->string encoding was unknown, so adding
+        # them to the text here would be gibberish.
+        for operands, operator in content.operations:
+            if operator == b_("Tj"):
+                _text = operands[0]
+                if isinstance(_text, TextStringObject):
+                    text += _text
+                    text += "\n"
+            elif operator == b_("T*"):
+                text += "\n"
+            elif operator == b_("'"):
+                text += "\n"
+                _text = operands[0]
+                if isinstance(_text, TextStringObject):
+                    text += operands[0]
+            elif operator == b_('"'):
+                _text = operands[2]
+                if isinstance(_text, TextStringObject):
+                    text += "\n"
+                    text += _text
+            elif operator == b_("TJ"):
+                for i in operands[0]:
+                    if isinstance(i, TextStringObject):
+                        text += i
+                text += "\n"
+
+    '''
     fonts = set()
     embedded = set()
     for page in reader.pages:
         obj = page.getObject()
+        obj.get
         f, e = walk(obj['/Resources'], fonts, embedded)
         fonts = fonts.union(f)
         embedded = embedded.union(e)
@@ -53,7 +93,7 @@ def get_outlines_pypdf2(path):
     if unembedded:
         print('\nUnembedded Fonts')
         pprint(unembedded)
-
+    '''
 
     
 
