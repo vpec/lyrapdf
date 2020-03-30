@@ -485,5 +485,41 @@ def process_lists(text):
     return texto_procesado
 
 
+##########################################################################################
 
+def split_spans(text):
+    '''
+        :return Keep text and remove miscellaneous elements
+    '''
 
+    p1 = re.compile(r'(>)(<span)', re.MULTILINE | re.UNICODE)
+    processed_text = p1.sub(r'\1\n\2',text)
+    return processed_text
+
+def delete_misc(text):
+    '''
+        :return Keep text and remove miscellaneous elements
+    '''
+    
+    p1 = re.compile(r'<span style="font-family:.*</span>', re.MULTILINE | re.UNICODE | re.DOTALL)
+    match_list = re.findall(p1, text)
+    #text2 = p1.sub(r'<ol>\n\1\2',text)
+    processed_text = ""
+    for match in match_list:
+        processed_text += match + '\n'
+    return processed_text
+    
+def delete_dup_greater_than(text):
+    p1 = re.compile(r'(<br>)(>)(</)', re.UNICODE)
+    processed_text = p1.sub(r'\1\3',text)
+    return processed_text
+
+def delete_non_textual_elements(text):
+    p1 = re.compile(r'(<div style=)(.*?)(\n<span style=\"font-family)((.|\n)*?)(</span></div>)', re.MULTILINE | re.UNICODE)
+    match_list = re.findall(p1, text)
+    processed_text = ""
+    for match in match_list:
+        #print(match)
+        processed_text += ''.join(match) + '\n'
+    processed_text2 = delete_dup_greater_than(processed_text)
+    return processed_text2
