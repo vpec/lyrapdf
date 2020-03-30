@@ -97,13 +97,14 @@ def run():
 		# etiquetado = ParLabel(dir_entrada, "GPC_465_Insomnio_Lain_Entr_compl.pdf")
 
 
-		
+		"""
 		### DEBUG
 		f = open("/home/victor/pdfppl/pdfppl/resources/test/output/raw_pr_1_IACS_Protocolo_Migranya_Profesionales.pdf.html", "r")
 		texto_extraido = f.read()
 		process(texto_extraido, "/home/victor/pdfppl/pdfppl/resources/test/output", "pr_1_IACS_Protocolo_Migranya_Profesionales.pdf")
 
 		return 0
+		"""
 		
 
 
@@ -140,7 +141,7 @@ def run():
 				# nombre_archivo = archivos[i]
 				
 				print("Extracción de : "+ pdf_path + " terminada, iniciando procesado")
-				#process(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
+				process(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
 				#texto_procesado = primer_procesado(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
 				
 				#texto_procesado = (      primer_procesado(texto_extraido) | p(segundo_procesado) 

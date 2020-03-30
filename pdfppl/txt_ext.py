@@ -15,7 +15,7 @@ import PyPDF2
 
 
 def countRotated(text):
-    return len(re.findall('\w\n\w', text))
+    return len(re.findall(r'\w\n', text))
 
 def process_without_detect_vertical(interpreter, retstr, page, return_dict):
     interpreter.process_page(page)
@@ -52,7 +52,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         :return:        Extrae el texto contenido en un PDF a través del uso de
                         PDFMiner y saca lo extraído al fichero salida_ExtraccionTexto
         """
-    
+    """
     _rsrcmgr = PDFResourceManager()
     _retstr = StringIO()
     _codec = 'utf-8'
@@ -121,14 +121,16 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _device.close()
     _retstr.close()
     return _text
-    
     """
+    
+    
     _rsrcmgr = PDFResourceManager()
     _retstr = StringIO()
     _codec = 'utf-8'
     _laparams = LAParams(detect_vertical=True)
     #  _device = TextConverter(_rsrcmgr, _retstr, codec=_codec,laparams=_laparams)
-    _device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
+    #_device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
+    _device = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
     _file = open(path, 'rb')
     
     '''
@@ -166,7 +168,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _rsrcmgr_default = PDFResourceManager()
     _retstr_default = StringIO()
     _laparams_default = LAParams() # detect_vertical=False
-    _device_default = TextConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams_default)
+    _device_default = HTMLConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams_default)
     _interpreter_default = PDFPageInterpreter(_rsrcmgr_default, _device_default)
 
     _text = ""
@@ -192,6 +194,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
 
         # Set timeout based on elapsed time using detect_vertical processing
         _timeout = 5 + t_elapsed * 10
+        #_timeout = 100000
 
         # Create shared variable
         manager = Manager()
@@ -209,10 +212,9 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
             action_process.join()
             rotating = True
         else:
-            # We start the process and we block for 5 seconds.
-            print(countRotated(_retstr_default.getvalue()))
             # Get number of occurences
             num_occ_default = return_dict[0]
+            print(num_occ_default)
             # Check if page needs to be rotated
             if(num_occ_default / num_occ > 5 and num_occ_default > 100):
                 rotating = True
@@ -220,13 +222,13 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         if(rotating):
             print("Rotating")
             # Clean buffer
-            #_retstr.truncate(0)
-            #_retstr.seek(0)
+            _retstr.truncate(0)
+            _retstr.seek(0)
             # Rotate page
             page.rotate = (page.rotate+90) % 360
             # Analyze again with detect_vertical
-            #_interpreter.process_page(page)
-        _interpreter_html.process_page(page)
+            _interpreter.process_page(page)
+        #_interpreter_html.process_page(page)
 
         '''
         layout = _aggregator.get_result()
@@ -236,7 +238,8 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         '''
 
         # Append new text
-        #_text += _retstr.getvalue()
+        _text += _retstr.getvalue()
+        
         
         # Clean buffers
         _retstr.truncate(0)
@@ -247,13 +250,15 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
 
     print("finishing")
 
-    _text = _retstr_html.getvalue() + '\n\n'
+    #_text = _retstr_html.getvalue() + '\n\n'
+    _text += '\n\n'
     if (generate_output) :
-        pre_proc.create_text_file(output_dir + "/raw_2" + file_name + ".html", _text) # Insertamos en el fichero el texto extraido
+        pre_proc.create_text_file(output_dir + "/raw_" + file_name + ".html", _text) # Insertamos en el fichero el texto extraido
+        #pre_proc.create_text_file(output_dir + "/raw_default_" + file_name + ".html", _text_default) # Insertamos en el fichero el texto extraido
 
     _file.close()
     _device.close()
     _retstr.close()
     return _text
-    """
+    
 
