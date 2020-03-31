@@ -528,11 +528,16 @@ def get_page_bounds(text):
     p1 = re.compile(r'<span style=\"position:absolute; border:.*?top:(.*?)px.*?height:(.*?)px.*?></span>\n<div style=\"position:absolute;.*?Page.*?</a></div>', re.UNICODE)
     match_list = re.findall(p1, text)
     page_num = 1
+    # Bound coefficients
+    kl = 0.05
+    ku = 0.08
+    bounds_list = []
     for match in match_list:
         top = int(match[0])
         height = int(match[1])
-        lower_bound = top
-        upper_bound = top + height
+        lower_bound = top + kl * height
+        upper_bound = (top + height) - ku * height
+        bounds_list.append((lower_bound, upper_bound))
         print("Page", str(page_num))
         print(str(lower_bound), " - ", str(upper_bound))
         print(match)
@@ -542,5 +547,6 @@ def delete_headers(text):
     p1 = re.compile(r'(<div style=\"position:absolute; border:.*?top:(.*?)px.*?</div>)', re.UNICODE | re.DOTALL)
     match_list = re.findall(p1, text)
     for match in match_list:
-        print(match)
+        #print(match)
+        pass
     return text
