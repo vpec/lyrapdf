@@ -523,3 +523,9 @@ def delete_non_textual_elements(text):
         processed_text += ''.join(match) + '\n'
     processed_text2 = delete_dup_greater_than(processed_text)
     return processed_text2
+
+def get_page_bounds(text):
+    p1 = re.compile(r'<span style=\"position:absolute; border:.*?top:(.*?)px.*?height:(.*?)px.*?></span>\n<div style=\"position:absolute;.*?Page.*?</a></div>', re.UNICODE)
+    match_list = re.findall(p1, text)
+    for match in match_list:
+        print(match)

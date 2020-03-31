@@ -73,6 +73,8 @@ def process(text, output_dir, file_name):
 					)
 	'''
 
+	pre_proc.get_page_bounds(text)
+
 	processed_text = ( pre_proc.split_spans(text) 			| p(pre_proc.delete_non_textual_elements)
 					)
 	
@@ -97,14 +99,14 @@ def run():
 		# etiquetado = ParLabel(dir_entrada, "GPC_465_Insomnio_Lain_Entr_compl.pdf")
 
 
-		"""
+		
 		### DEBUG
 		f = open("/home/victor/pdfppl/pdfppl/resources/test/output/raw_pr_1_IACS_Protocolo_Migranya_Profesionales.pdf.html", "r")
 		texto_extraido = f.read()
 		process(texto_extraido, "/home/victor/pdfppl/pdfppl/resources/test/output", "pr_1_IACS_Protocolo_Migranya_Profesionales.pdf")
 
 		return 0
-		"""
+		
 		
 
 
