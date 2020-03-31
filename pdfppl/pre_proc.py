@@ -527,9 +527,8 @@ def delete_non_textual_elements(text):
 def get_page_bounds(text):
     p1 = re.compile(r'<span style=\"position:absolute; border:.*?top:(.*?)px.*?height:(.*?)px.*?></span>\n<div style=\"position:absolute;.*?Page.*?</a></div>', re.UNICODE)
     match_list = re.findall(p1, text)
-    page_num = 1
     # Bound coefficients
-    kl = 0.05
+    kl = 0.04
     ku = 0.08
     bounds_list = []
     for match in match_list:
@@ -538,15 +537,35 @@ def get_page_bounds(text):
         lower_bound = top + kl * height
         upper_bound = (top + height) - ku * height
         bounds_list.append((lower_bound, upper_bound))
-        print("Page", str(page_num))
-        print(str(lower_bound), " - ", str(upper_bound))
-        print(match)
-        page_num += 1
+    return bounds_list
 
-def delete_headers(text):
+def delete_headers(text, bounds_list):
     p1 = re.compile(r'(<div style=\"position:absolute; border:.*?top:(.*?)px.*?</div>)', re.UNICODE | re.DOTALL)
+    print(bounds_list)
+    print(len(bounds_list))
     match_list = re.findall(p1, text)
+    i = 0 # variable for iterating bounds list
     for match in match_list:
         #print(match)
+        matched = match[0]
+        position = int(match[1])
+        found = False
+        while(not found):
+            if(position >= bounds_list[i][0] and position <= bounds_list[i][1]):
+                # OK
+                found = True
+            elif(position > bounds_list[i][1]):
+                # Higher than upper bound
+                i += 1
+                if(i == len(bounds_list)):
+                    # end of the bounds lists
+                    found = True
+                    # Restore i, maybe there are more headers in the last page
+                    i -= 1
+                    print(matched)
+            else:
+                # Lower than lower bound
+                found = True
+                print(matched)
         pass
     return text

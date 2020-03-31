@@ -73,10 +73,10 @@ def process(text, output_dir, file_name):
 					)
 	'''
 
-	pre_proc.get_page_bounds(text)
+	bounds_list = pre_proc.get_page_bounds(text)
 
 	processed_text = ( pre_proc.split_spans(text) 			| p(pre_proc.delete_non_textual_elements)
-															| p(pre_proc.delete_headers)
+															| p(pre_proc.delete_headers, bounds_list)
 					)
 	
 
