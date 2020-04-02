@@ -528,7 +528,7 @@ def get_page_bounds(text):
     p1 = re.compile(r'<span style=\"position:absolute; border:.*?top:(.*?)px.*?height:(.*?)px.*?></span>\n<div style=\"position:absolute;.*?Page.*?</a></div>', re.UNICODE)
     match_list = re.findall(p1, text)
     # Bound coefficients
-    kl = 0.04
+    kl = 0.05
     ku = 0.08
     bounds_list = []
     for match in match_list:
@@ -543,6 +543,9 @@ def delete_headers(text, bounds_list):
     p1 = re.compile(r'(<div style=\"position:absolute; border:.*?top:(.*?)px.*?</div>)', re.UNICODE | re.DOTALL)
     print(bounds_list)
     print(len(bounds_list))
+    # Store processed text
+    processed_text = ""
+    removed_text = ""
     match_list = re.findall(p1, text)
     i = 0 # variable for iterating bounds list
     for match in match_list:
@@ -554,6 +557,7 @@ def delete_headers(text, bounds_list):
             if(position >= bounds_list[i][0] and position <= bounds_list[i][1]):
                 # OK
                 found = True
+                processed_text += matched
             elif(position > bounds_list[i][1]):
                 # Higher than upper bound
                 i += 1
@@ -562,10 +566,10 @@ def delete_headers(text, bounds_list):
                     found = True
                     # Restore i, maybe there are more headers in the last page
                     i -= 1
-                    print(matched)
+                    removed_text += matched
             else:
                 # Lower than lower bound
                 found = True
-                print(matched)
-        pass
-    return text
+                removed_text += matched
+    ### REMOVE LATER, RETURN ONLY PROCESSED_TEXT
+    return processed_text, removed_text
