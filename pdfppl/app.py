@@ -75,12 +75,14 @@ def process(text, output_dir, file_name):
 
 	bounds_list = pre_proc.get_page_bounds(text)
 
-	processed_text = ( pre_proc.split_spans(text) 			| p(pre_proc.delete_non_textual_elements)
-															| p(pre_proc.delete_headers, bounds_list)
+	processed_text_tuple = ( pre_proc.split_spans(text) 		| p(pre_proc.delete_non_textual_elements)
+																| p(pre_proc.delete_headers, bounds_list)
 					)
 	
 
-	pre_proc.create_text_file(output_dir + "/" + file_name + ".html", processed_text)
+	pre_proc.create_text_file(output_dir + "/" + file_name + ".html", processed_text_tuple[0])
+	# Removed headers' text (for debugging)
+	pre_proc.create_text_file(output_dir + "/removed_" + file_name + ".html", processed_text_tuple[1])
 
 def get_listPDF(input_dir):
 	'''
@@ -102,12 +104,13 @@ def run():
 
 		
 		### DEBUG
+		"""
 		f = open("/home/victor/pdfppl/pdfppl/resources/test/output/raw_pr_1_IACS_Protocolo_Migranya_Profesionales.pdf.html", "r")
 		texto_extraido = f.read()
 		process(texto_extraido, "/home/victor/pdfppl/pdfppl/resources/test/output", "pr_1_IACS_Protocolo_Migranya_Profesionales.pdf")
 
 		return 0
-		
+		"""
 		
 
 

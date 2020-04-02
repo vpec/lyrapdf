@@ -539,6 +539,32 @@ def get_page_bounds(text):
         bounds_list.append((lower_bound, upper_bound))
     return bounds_list
 
+
+def is_header(bounds_list, position, i):
+    found = False
+    it_is_header = True
+    while(not found):
+        if(position >= bounds_list[i][0] and position <= bounds_list[i][1]):
+            # OK
+            found = True
+            it_is_header = False
+        elif(position > bounds_list[i][1]):
+            # Higher than upper bound
+            i += 1
+            if(i == len(bounds_list)):
+                # end of the bounds lists
+                found = True
+                # Restore i, maybe there are more headers in the last page
+                i -= 1
+        else:
+            # Lower than lower bound
+            found = True
+    # Decrease i, because text might not be in the right order
+    i -= 2
+    if(i < 0):
+        i = 0
+    return it_is_header, i
+
 def delete_headers(text, bounds_list):
     p1 = re.compile(r'(<div style=\"position:absolute; border:.*?top:(.*?)px.*?</div>)', re.UNICODE | re.DOTALL)
     print(bounds_list)
@@ -552,24 +578,13 @@ def delete_headers(text, bounds_list):
         #print(match)
         matched = match[0]
         position = int(match[1])
-        found = False
-        while(not found):
-            if(position >= bounds_list[i][0] and position <= bounds_list[i][1]):
-                # OK
-                found = True
-                processed_text += matched
-            elif(position > bounds_list[i][1]):
-                # Higher than upper bound
-                i += 1
-                if(i == len(bounds_list)):
-                    # end of the bounds lists
-                    found = True
-                    # Restore i, maybe there are more headers in the last page
-                    i -= 1
-                    removed_text += matched
-            else:
-                # Lower than lower bound
-                found = True
-                removed_text += matched
+        # Check if piece of text is header
+        it_is_header, i = is_header(bounds_list, position, i)
+        if(it_is_header):
+            # If it's header
+            removed_text += matched
+        else:
+            # If it isn't header
+            processed_text += matched
     ### REMOVE LATER, RETURN ONLY PROCESSED_TEXT
     return processed_text, removed_text
