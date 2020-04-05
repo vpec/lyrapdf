@@ -75,14 +75,15 @@ def process(text, output_dir, file_name):
 
 	bounds_list = pre_proc.get_page_bounds(text)
 
-	processed_text_tuple = ( pre_proc.split_spans(text) 		| p(pre_proc.delete_non_textual_elements)
+	processed_text = ( pre_proc.split_spans(text) 		| p(pre_proc.delete_non_textual_elements)
 																| p(pre_proc.delete_headers, bounds_list)
+																| p(pre_proc.delete_vertical_text)
 					)
 	
 
-	pre_proc.create_text_file(output_dir + "/" + file_name + ".html", processed_text_tuple[0])
+	pre_proc.create_text_file(output_dir + "/del2_" + file_name + ".html", processed_text)
 	# Removed headers' text (for debugging)
-	pre_proc.create_text_file(output_dir + "/removed_" + file_name + ".html", processed_text_tuple[1])
+	#pre_proc.create_text_file(output_dir + "/removed_" + file_name + ".html", processed_text_tuple[1])
 
 def get_listPDF(input_dir):
 	'''
