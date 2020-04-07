@@ -596,8 +596,8 @@ def delete_headers(text, bounds_list):
 
 def delete_vertical_text(text):
     
-    #p1 = re.compile(r'((<div style=\"position:absolute; border:.*?)\n(<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(.|\n)*?</div>)', re.UNICODE)
-    p1 = re.compile(r'(?!((?:<div style=\"position:absolute; border:.*?)\n(?:<span style=\"font-family:.*?font-size:(?P<size>.+?)px\">.{1,5}</span>\n)((?:<span style=\"font-family:.*?font-size:(?P=size)px\">.{1,5}</span>\n){4,})(?:.|\n)*?</div>))(?:(?:<div style=\"position:absolute; border:.*?)\n(?:<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(?:.|\n)*?</div>)', re.UNICODE)
+    p1 = re.compile(r'((<div style=\"position:absolute; border:.*?)\n(<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(.|\n)*?</div>)', re.UNICODE)
+    #p1 = re.compile(r'(?!((?:<div style=\"position:absolute; border:.*?)\n(?:<span style=\"font-family:.*?font-size:(?P<size>.+?)px\">.{1,5}</span>\n)((?:<span style=\"font-family:.*?font-size:(?P=size)px\">.{1,5}</span>\n){4,})(?:.|\n)*?</div>))(?:(?:<div style=\"position:absolute; border:.*?)\n(?:<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(?:.|\n)*?</div>)', re.UNICODE)
     """
     ((<div style=\"position:absolute; border:.*?)\n((?:<span style=\"font-family:.*?font-size:(.+?)px\">.{1,5}</span>\n){5,})(.|\n)*?</div>)
     detect same size text
@@ -609,4 +609,17 @@ def delete_vertical_text(text):
     """
 
     processed_text = p1.sub("", text)
+    return processed_text
+
+
+def extract_text(text):
+    p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
+    match_list = re.findall(p1, text)
+    processed_text = ""
+    for match in match_list:
+        #print(match)
+        font = match[0]
+        font_size = int(match[1])
+        matched_text = match[2]
+        processed_text += matched_text + '\n'
     return processed_text
