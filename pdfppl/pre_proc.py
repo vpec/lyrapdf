@@ -38,6 +38,7 @@ from collections import Counter
 from unicodedata import normalize
 from os.path import exists
 from os import mknod
+import json
 
 
 #    fichero_text_append('ficheros_salida/salida_ConteoBigramas.txt', "Fin del top 100 ---") 
@@ -55,6 +56,17 @@ def append_text_file(path,text):
 
 
 
+def create_json_file(path,text):
+    '''
+        :param path:    String no vacio relativo a la ruta donde se generará el output
+        :param text:    String a guardar en el fichero
+        :return:        Genera un fichero de texto en el directorio path cuyo contenido
+                         es text
+    '''
+    file = open(path,'wb+')
+    file.write(text)
+    file.close()
+    return 1
 
 
 def create_text_file(path,text):
@@ -616,10 +628,20 @@ def extract_text(text):
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
     match_list = re.findall(p1, text)
     processed_text = ""
+    latest_font_size = 0
+    text_list = [] # Initialize as empty list
     for match in match_list:
         #print(match)
         font = match[0]
         font_size = int(match[1])
         matched_text = match[2]
-        processed_text += matched_text + '\n'
-    return processed_text
+        if(latest_font_size != font_size):
+            # New text element
+            #processed_text += "========================================================" + matched_text + '\n'
+            text_list.append(matched_text + '\n')
+        else:
+            # Same text element
+            text_list[-1] += matched_text + '\n'
+            #processed_text += "-----" + matched_text + '\n'
+        latest_font_size = font_size
+    return json.dumps(text_list, ensure_ascii=False).encode('utf8')

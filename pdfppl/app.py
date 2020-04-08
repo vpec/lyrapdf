@@ -82,7 +82,8 @@ def process(text, output_dir, file_name):
 					)
 	
 
-	pre_proc.create_text_file(output_dir + "/text_" + file_name + ".html", processed_text)
+	pre_proc.create_json_file(output_dir + "/json_" + file_name + ".json", processed_text)
+	#pre_proc.create_text_file(output_dir + "/text_" + file_name + ".txt", processed_text)
 	# Removed headers' text (for debugging)
 	#pre_proc.create_text_file(output_dir + "/removed_" + file_name + ".html", processed_text_tuple[1])
 
@@ -95,6 +96,17 @@ def get_listPDF(input_dir):
 	archivos = [f for f in listdir(input_dir) if isfile(join(input_dir, f)) ]
 
 	return path_archivos,archivos
+
+def run_test():
+	input_dir = "/home/victor/pdfppl/pdfppl/resources/raw"
+	output_dir = "/home/victor/pdfppl/pdfppl/resources/output"
+	raw_text_list, archivos = get_listPDF(input_dir)
+	for pdf_path in raw_text_list:
+			print('Processing raw text from: ', pdf_path)
+			_file = open(pdf_path, 'r')
+			text = _file.read()
+			_file.close()
+			process(text, output_dir, path_leaf(pdf_path))
 
 def run():
 	if(len(sys.argv) == 2):
