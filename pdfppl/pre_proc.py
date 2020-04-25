@@ -39,7 +39,10 @@ from unicodedata import normalize
 from os.path import exists
 from os import mknod
 import json
-
+import matplotlib.pylab as plt
+from scipy.stats import norm
+import numpy as np
+import seaborn as sns
 
 #    fichero_text_append('ficheros_salida/salida_ConteoBigramas.txt', "Fin del top 100 ---") 
 def append_text_file(path,text):
@@ -623,25 +626,99 @@ def delete_vertical_text(text):
     processed_text = p1.sub("", text)
     return processed_text
 
+def analyze_font_size(text):
+    p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
+    match_list = re.findall(p1, text)
+    font_size_dict = {}
+    summatory = 0
+    num_data = 0
+    data = []
+    for match in match_list:
+        font = match[0]
+        font_size = int(match[1])
+        matched_text_len = len(match[2])
+        # Check if key exists in dictionary
+        if font_size in font_size_dict:
+            # It exists, increase value
+            font_size_dict[font_size] = int(font_size_dict[font_size]) + matched_text_len
+        else:
+            # It doesn't exist, create new pair
+            font_size_dict[font_size] = matched_text_len
+        summatory += font_size * matched_text_len
+        num_data += matched_text_len
+        data += [font_size] * matched_text_len
+
+    """
+    print(font_size_dict)
+    mean = summatory / num_data
+    mu, std = norm.fit(data)
+    xmin, xmax = plt.xlim()
+    x = np.linspace(xmin, xmax, 100)
+    p = norm.pdf(x, mu, std)
+    plt.plot(x, p, 'k', linewidth=2)
+
+    print("mean", mean)
+    # Plot analysis
+    lists = sorted(font_size_dict.items())
+    x, y = zip(*lists)
+    #plt.plot(x, y)
+    #plt.bar(font_size_dict.keys(), font_size_dict.values(), color='g')
+    plt.hist(data)
+    plt.show()
+    """
+    sns.distplot(data)
+    #plt.show()
+    # return key with max value (most frequent font size)
+    return max(font_size_dict, key=font_size_dict.get)
+
+
+def replace_br(text):
+    p1 = re.compile(r'<br>', re.UNICODE)
+    p2 = re.compile(r'\n+', re.UNICODE)
+    processed_text = p1.sub(r'\n', text)
+    processed_text2 = p2.sub(r'\n', processed_text)
+    return processed_text2
+
+def remove_small_text(text):
+    p1 = re.compile(r'(<div style=\"position:absolute;(?:.|\n)*?<span style=\"font-family: .*?; font-size:(.*?)px\">(?:.|\n)*?</div>)', re.UNICODE)
+    match_list = re.findall(p1, text)
+    processed_text = ""
+    for match in match_list:
+        font_size = int(match[1])
+        if(font_size >= 7):
+            processed_text += match[0]
+    return processed_text
 
 def extract_text(text):
+    most_common_size = analyze_font_size(text)
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
     match_list = re.findall(p1, text)
     processed_text = ""
-    latest_font_size = 0
+    prev_font_size = 0
     text_list = [] # Initialize as empty list
     for match in match_list:
         #print(match)
         font = match[0]
         font_size = int(match[1])
         matched_text = match[2]
-        if(latest_font_size != font_size):
+        if(len(text_list) == 0):
             # New text element
-            #processed_text += "========================================================" + matched_text + '\n'
             text_list.append(matched_text + '\n')
-        else:
+        elif(prev_font_size == font_size):
             # Same text element
             text_list[-1] += matched_text + '\n'
-            #processed_text += "-----" + matched_text + '\n'
-        latest_font_size = font_size
+        else:
+            if(prev_font_size <= most_common_size and font_size <= most_common_size):
+                # Same text element
+                text_list[-1] += matched_text + '\n'
+            else:
+                # New text element
+                text_list.append(matched_text + '\n')
+            
+        prev_font_size = font_size
+        #print(text_list[-1])
     return json.dumps(text_list, ensure_ascii=False).encode('utf8')
+
+
+def detect_quotation_marks(text):
+    p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
