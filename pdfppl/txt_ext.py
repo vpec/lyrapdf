@@ -159,7 +159,8 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
 
 
     #pagina = 31           
-    _password = ""           # Cambiar en caso de PDF con pass
+    #_password = ""           # Cambiar en caso de PDF con pass
+    _password = b'' # Set empty password as default value
     # maxpages = pagina       # Máximas páginas a recorrer
     # añadir al for for numero,page in enumerate(PDFPage.get_pages(fp, pagenos, maxpages = maxpages password=password, check_extractable=True)
 

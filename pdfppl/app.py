@@ -11,6 +11,7 @@ from pdfppl import outlines
 from pdfppl import metadata
 import ntpath
 from pdfminer.pdfparser import PDFSyntaxError
+from pdfminer.pdfdocument import PDFTextExtractionNotAllowed
 
 
 def path_leaf(path):
@@ -171,6 +172,8 @@ def run():
 				#texto_total = texto_total + texto_procesado + '\n\n'
 			except PDFSyntaxError:
 				print("PDFSyntaxError: Is this really a PDF? ", pdf_path)
+			except PDFTextExtractionNotAllowed as e:
+				print(e)
 			
 			i+=1
 			
