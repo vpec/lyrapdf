@@ -83,7 +83,7 @@ def process(text, output_dir, file_name):
 					)
 	
 
-	pre_proc.create_json_file(output_dir + "/json_" + file_name + ".json", processed_text)
+	pre_proc.create_json_file(output_dir + "/" + file_name + ".json", processed_text)
 	#pre_proc.create_text_file(output_dir + "/html2_" + file_name + ".html", processed_text)
 	# Removed headers' text (for debugging)
 	#pre_proc.create_text_file(output_dir + "/removed_" + file_name + ".html", processed_text_tuple[1])
@@ -161,7 +161,7 @@ def run():
 				texto_extraido = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output", path_leaf(pdf_path))
 				# nombre_archivo = archivos[i]
 				
-				print("Extracción de : "+ pdf_path + " terminada, iniciando procesado")
+				print("Extraction finished: "+ pdf_path + ", starting processing")
 				process(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
 				#texto_procesado = primer_procesado(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
 				
