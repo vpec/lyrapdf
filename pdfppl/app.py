@@ -76,14 +76,17 @@ def process(text, output_dir, file_name):
 
 	bounds_list = pre_proc.get_page_bounds(text)
 
-	processed_text = ( pre_proc.split_spans(text) 		| p(pre_proc.delete_non_textual_elements)
+	processed_text_html = ( pre_proc.split_spans(text) 		| p(pre_proc.delete_non_textual_elements)
 														| p(pre_proc.delete_headers, bounds_list)
 														| p(pre_proc.delete_vertical_text)
-														| p(pre_proc.replace_br)
+					)
+
+	# Write processed HTML output 
+	pre_proc.create_text_file(output_dir + "/html_" + file_name + ".html", processed_text_html)
+	processed_text = ( pre_proc.replace_br(processed_text_html)
 														| p(pre_proc.extract_text)
 					)
 	
-
 	pre_proc.create_json_file(output_dir + "/" + file_name + ".json", processed_text)
 	#pre_proc.create_text_file(output_dir + "/html2_" + file_name + ".html", processed_text)
 	# Removed headers' text (for debugging)
