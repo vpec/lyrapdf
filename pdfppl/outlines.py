@@ -100,9 +100,10 @@ def get_outlines_pypdf2(path):
 def get_outlines_pdfminer(path):
 
     _file = open(path, 'rb')
+    _password = b'' # Set empty password as default value
 
     parser = PDFParser(_file)
-    document = PDFDocument(parser, "")
+    document = PDFDocument(parser, _password)
     try:
         outlines = document.get_outlines()
 
