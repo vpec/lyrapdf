@@ -18,7 +18,11 @@ def countRotated(text):
     return len(re.findall(r'\w\n', text))
 
 def process_without_detect_vertical(interpreter, retstr, page, return_dict):
+    t_start = time.process_time()
     interpreter.process_page(page)
+    t_elapsed = time.process_time() - t_start
+    print("elapsed 2: ", t_elapsed)
+    
     return_dict[0] = countRotated(retstr.getvalue()) + 1
 
     
@@ -188,7 +192,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         # Analyze with detect_vertical
         _interpreter.process_page(page)
         t_elapsed = time.process_time() - t_start
-        print(t_elapsed)
+        print("elapsed 1: ", t_elapsed)
         
         print(countRotated(_retstr.getvalue()))
         num_occ = countRotated(_retstr.getvalue()) + 1
@@ -196,6 +200,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         # Set timeout based on elapsed time using detect_vertical processing
         _timeout = 5 + t_elapsed * 10
         #_timeout = 100000
+        print("timeout: ", _timeout)
 
         # Create shared variable
         manager = Manager()
@@ -205,12 +210,13 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         action_process = Process(target=process_without_detect_vertical, args=(_interpreter_default, _retstr_default, page, return_dict,))
         action_process.start()
         action_process.join(timeout=_timeout)
-
+        
         # If thread is still active
         if action_process.is_alive():
             # Terminate
             action_process.terminate()
             action_process.join()
+            print("Ran out of time")
             rotating = True
         else:
             # Get number of occurences
