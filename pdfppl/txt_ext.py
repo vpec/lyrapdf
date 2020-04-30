@@ -199,6 +199,8 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
 
         # Set timeout based on elapsed time using detect_vertical processing
         _timeout = 5 + t_elapsed * 10
+        max_timeout = 60 # seconds
+        _timeout = min(max_timeout, _timeout)
         #_timeout = 100000
         print("timeout: ", _timeout)
 
