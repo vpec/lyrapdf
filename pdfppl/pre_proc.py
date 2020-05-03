@@ -774,7 +774,6 @@ def replace_br(text):
 def remove_blank_lines(text):
     p1 = re.compile(r'^\s+$', re.UNICODE | re.MULTILINE)
     processed_text = p1.sub(r'', text)
-    #p2 = re.compile(r'\n+', re.UNICODE)
-    #processed_text = p2.sub(r'\n', text)
-    #return processed_text
     return processed_text
+
+def replace_cid(text):
