@@ -671,13 +671,14 @@ def analyze_font_size(text):
     # return key with max value (most frequent font size)
     return max(font_size_dict, key=font_size_dict.get)
 
-
+"""
 def replace_br(text):
     p1 = re.compile(r'<br>', re.UNICODE)
     p2 = re.compile(r'\n+', re.UNICODE)
     processed_text = p1.sub(r'\n', text)
     processed_text2 = p2.sub(r'\n', processed_text)
     return processed_text2
+"""
 
 def remove_small_text(text):
     p1 = re.compile(r'(<div style=\"position:absolute;(?:.|\n)*?<span style=\"font-family: .*?; font-size:(.*?)px\">(?:.|\n)*?</div>)', re.UNICODE)
@@ -708,7 +709,7 @@ def extract_text(text):
             # Same text element
             text_list[-1] += matched_text + '\n'
         else:
-            if(prev_font_size <= most_common_size and font_size <= most_common_size):
+            if(prev_font_size <= most_common_size + 1 and font_size <= most_common_size + 1):
                 # Same text element
                 text_list[-1] += matched_text + '\n'
             else:
@@ -719,6 +720,61 @@ def extract_text(text):
         #print(text_list[-1])
     return json.dumps(text_list, ensure_ascii=False).encode('utf8')
 
+def extract_text_md(text):
+    most_common_size = analyze_font_size(text)
+    p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
+    p2 = re.compile(r'\n+', re.UNICODE)
+    match_list = re.findall(p1, text)
+    processed_text = ""
+    prev_font_size = 0
+    for match in match_list:
+        #print(match)
+        font = match[0]
+        font_size = int(match[1])
+        matched_text = match[2]
+        # Convert matched text \n to <br>
+        matched_text = p2.sub(r'<br>', matched_text)
+        if(prev_font_size <= most_common_size and font_size <= most_common_size):
+            processed_text += '\n' + matched_text
+        elif(font_size == prev_font_size):
+            processed_text += ' ' + matched_text
+        elif(font_size > most_common_size):
+            processed_text += '\n### ' + matched_text
+        elif(prev_font_size > most_common_size):
+            processed_text += '\n' + matched_text
+        else:  
+            print("font_size", font_size)
+            print("prev_font_size", prev_font_size)
+            print("most_common_size", most_common_size)
+        prev_font_size = font_size
+
+    return processed_text
+
 
 def detect_quotation_marks(text):
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
+
+def replace_br(text):
+    p1 = re.compile(r'^.*?$', re.UNICODE | re.MULTILINE)
+    p2 = re.compile(r'^#+.*?$', re.UNICODE | re.MULTILINE)
+    p3 = re.compile(r'(?:<br>)+', re.UNICODE | re.MULTILINE)
+    # Initialize processed text string
+    processed_text = ""
+    match_list = re.findall(p1, text)
+    for match in match_list:
+        if(p2.search(match) != None):
+            # It is a title, so replace <br> with blank space
+            processed_match = p3.sub(r' ', match)
+        else:
+            # It is not a title, so replace <br> with \n
+            processed_match = p3.sub(r'\n', match)
+        processed_text += processed_match + '\n'
+    return processed_text
+
+def remove_blank_lines(text):
+    p1 = re.compile(r'^\s+$', re.UNICODE | re.MULTILINE)
+    processed_text = p1.sub(r'', text)
+    #p2 = re.compile(r'\n+', re.UNICODE)
+    #processed_text = p2.sub(r'\n', text)
+    #return processed_text
+    return processed_text
