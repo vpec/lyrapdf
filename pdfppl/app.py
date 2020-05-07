@@ -90,14 +90,15 @@ def process(text, output_dir, file_name):
 	"""
 	processed_text = ( pre_proc.extract_text_md(processed_text_html)
 														| p(pre_proc.replace_br)
+														| p(pre_proc.remove_blank_lines)
 					)
 	
 	pre_proc.create_text_file(output_dir + "/" + file_name + "_pre.md", processed_text)
 
-	processed_text2 = ( pre_proc.remove_blank_lines(processed_text)
+	processed_text2 = ( pre_proc.replace_cid(processed_text)
 					)
 
-	pre_proc.create_text_file(output_dir + "/" + file_name + ".md", processed_text2)			
+	pre_proc.create_text_file(output_dir + "/" + file_name + "_post.md", processed_text2)			
 	#pre_proc.create_json_file(output_dir + "/" + file_name + ".json", processed_text)
 	#pre_proc.create_text_file(output_dir + "/html2_" + file_name + ".html", processed_text)
 	# Removed headers' text (for debugging)
