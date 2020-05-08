@@ -777,27 +777,23 @@ def remove_blank_lines(text):
     return processed_text
 
 def replace_cid(text):
+    # Replace with dashes
     p1 = re.compile(r'(\(cid:(114|131)\) *)') 
     text = p1.sub(r'- ',text)
+    # Replace with ó
     p2 = re.compile(r'(\(cid:214\) *)') 
     text = p2.sub(r'ó',text)
-    p3 = re.compile(r'(\(cid:([0-5])\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
-    text = p3.sub(r' ',text)
+    # Replace with cid:1 (blank space)
+    p3 = re.compile(r'\(cid:[0-5]\) *', re.MULTILINE | re.DOTALL |re.UNICODE)
+    text = p3.sub(r'(cid:1)', text)
+    # Replace with ASCII extended chars
     p4 = re.compile(r'(\(cid:(19[0-9])\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
     text4 = p4.sub(lambda m: chr(int(m.group(2))+27),text)
     p5 = re.compile(r'(\(cid:((21[5-9]|22[0-9]))\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
     text = p5.sub(lambda m: chr(int(m.group(2))+30),text)
     p6 = re.compile(r'(\(cid:(2[0-9][0-9])\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
     text = p6.sub(lambda m: chr(int(m.group(2))+28),text)
+    # Generic replacing
     p7 = re.compile(r'(\(cid:([0-9]+)\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
     text = p7.sub(lambda m: chr(int(m.group(2))+31),text)
-
-    # Gestion incorrecta de letras
-    text.replace(chr(229),"a")   
-    text.replace(chr(245),"o") 
-    text.replace(chr(10),"o") 
-    text.replace(chr(245),"o") 
-    text.replace(chr(240),"o") 
-    text.replace(chr(251),"u") 
-     
     return text
