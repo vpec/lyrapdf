@@ -663,13 +663,31 @@ def analyze_font_size(text):
     x, y = zip(*lists)
     #plt.plot(x, y)
     #plt.bar(font_size_dict.keys(), font_size_dict.values(), color='g')
-    plt.hist(data)
-    plt.show()
     """
-    sns.distplot(data)
+    plt.hist(data)
+    #plt.show()
+
+    percentage = 0.95
+    sorted_font_size_dict = sorted(font_size_dict)
+    print(sorted_font_size_dict)
+    print(max(font_size_dict, key=font_size_dict.get))
+
+    total = sum(font_size_dict.values())
+    percentage_sum = 0
+    for key in sorted_font_size_dict:
+        percentage_sum += (font_size_dict[key] / total)
+        if(percentage_sum >= percentage):
+            font_threshold = key
+            print("key", key)
+            print("percentage_sum", percentage_sum)
+            print("percentage_sum old", (percentage_sum - (font_size_dict[key] / total)))
+            break
+
+    #sns.distplot(data)
     #plt.show()
     # return key with max value (most frequent font size)
-    return max(font_size_dict, key=font_size_dict.get)
+    #return max(font_size_dict, key=font_size_dict.get)
+    return font_threshold
 
 """
 def replace_br(text):
