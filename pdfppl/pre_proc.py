@@ -43,6 +43,8 @@ import matplotlib.pylab as plt
 from scipy.stats import norm
 import numpy as np
 import seaborn as sns
+from sklearn.cluster import KMeans
+from pdfppl.ckmeans import ckmeans
 
 #    fichero_text_append('ficheros_salida/salida_ConteoBigramas.txt', "Fin del top 100 ---") 
 def append_text_file(path,text):
@@ -626,6 +628,74 @@ def delete_vertical_text(text):
     processed_text = p1.sub("", text)
     return processed_text
 
+def assignment(df, centroids):
+    for i in centroids.keys():
+        # sqrt((x1 - x2)^2 - (y1 - y2)^2)
+        df['distance_from_{}'.format(i)] = (
+            np.sqrt(
+                (df['x'] - centroids[i][0]) ** 2
+                + (df['y'] - centroids[i][1]) ** 2
+            )
+        )
+    centroid_distance_cols = ['distance_from_{}'.format(i) for i in centroids.keys()]
+    df['closest'] = df.loc[:, centroid_distance_cols].idxmin(axis=1)
+    df['closest'] = df['closest'].map(lambda x: int(x.lstrip('distance_from_')))
+    df['color'] = df['closest'].map(lambda x: colmap[x])
+    return df
+
+
+def kmeans(font_size_list):
+    print("k-means")
+    print(font_size_list)
+    k = min(6, len(font_size_list))
+    data = []
+    for font_size in font_size_list:
+        data.append([font_size])
+    """
+    k = 3
+    np.random.seed(200)
+    centroids = {
+        i+1: np.random.randint(font_size_list[0], font_size_list[-1])
+        for i in range(k)
+    }
+    print(centroids)
+    for font_size in font_size_list:
+        min_dist = np.Inf
+        for key in centroids:
+            dist = (font_size - centroids[key]) ** 2
+            if(dist < min_dist):
+                # Assign to a better centroid
+                min_dist = dist
+    """
+    kmeans = KMeans(n_clusters=k, random_state=0, algorithm="full").fit(data)
+    headings = [None] * k
+    flat_list = [item for sublist in kmeans.cluster_centers_ for item in sublist]
+    i = 1
+    for element in sorted(kmeans.cluster_centers_, reverse=True):
+        headings[flat_list.index(element)] = i
+        i += 1
+    headings_dict = {}
+    i = 0
+    for font_size in font_size_list:
+        headings_dict[font_size] = headings[kmeans.labels_[i]]
+        i += 1
+
+    print(headings_dict)
+    print("ckmeans")
+    intervals = list(reversed(ckmeans(font_size_list, k)))
+
+    headings_dict2 = {}
+
+    i = 1
+    for sublist in intervals:
+        for font_size in sublist:
+            headings_dict2[font_size] = i
+        i += 1
+    print(headings_dict2)
+    return headings_dict
+
+
+
 def analyze_font_size(text):
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
     match_list = re.findall(p1, text)
@@ -674,20 +744,23 @@ def analyze_font_size(text):
 
     total = sum(font_size_dict.values())
     percentage_sum = 0
+    i = 0 # Keep track of the index
     for key in sorted_font_size_dict:
         percentage_sum += (font_size_dict[key] / total)
+        i += 1
         if(percentage_sum >= percentage):
             font_threshold = key
             print("key", key)
             print("percentage_sum", percentage_sum)
             print("percentage_sum old", (percentage_sum - (font_size_dict[key] / total)))
             break
+    headings_dict = kmeans(sorted_font_size_dict[i:])
 
     #sns.distplot(data)
     #plt.show()
     # return key with max value (most frequent font size)
     #return max(font_size_dict, key=font_size_dict.get)
-    return font_threshold
+    return font_threshold, headings_dict
 
 """
 def replace_br(text):
@@ -709,7 +782,7 @@ def remove_small_text(text):
     return processed_text
 
 def extract_text(text):
-    most_common_size = analyze_font_size(text)
+    font_threshold, headings_dict = analyze_font_size(text)
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
     match_list = re.findall(p1, text)
     processed_text = ""
@@ -727,7 +800,7 @@ def extract_text(text):
             # Same text element
             text_list[-1] += matched_text + '\n'
         else:
-            if(prev_font_size <= most_common_size + 1 and font_size <= most_common_size + 1):
+            if(prev_font_size <= font_threshold + 1 and font_size <= font_threshold + 1):
                 # Same text element
                 text_list[-1] += matched_text + '\n'
             else:
@@ -739,7 +812,7 @@ def extract_text(text):
     return json.dumps(text_list, ensure_ascii=False).encode('utf8')
 
 def extract_text_md(text):
-    most_common_size = analyze_font_size(text)
+    font_threshold, headings_dict = analyze_font_size(text)
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
     p2 = re.compile(r'\n+', re.UNICODE)
     match_list = re.findall(p1, text)
@@ -752,18 +825,19 @@ def extract_text_md(text):
         matched_text = match[2]
         # Convert matched text \n to <br>
         matched_text = p2.sub(r'<br>', matched_text)
-        if(prev_font_size <= most_common_size and font_size <= most_common_size):
+        if(prev_font_size <= font_threshold and font_size <= font_threshold):
             processed_text += '\n' + matched_text
         elif(font_size == prev_font_size):
             processed_text += ' ' + matched_text
-        elif(font_size > most_common_size):
-            processed_text += '\n### ' + matched_text
-        elif(prev_font_size > most_common_size):
+        elif(font_size > font_threshold):
+            processed_text += '\n' + '#' * headings_dict[font_size] + ' ' + matched_text
+            #processed_text += '\n### ' + matched_text
+        elif(prev_font_size > font_threshold):
             processed_text += '\n' + matched_text
         else:  
             print("font_size", font_size)
             print("prev_font_size", prev_font_size)
-            print("most_common_size", most_common_size)
+            print("most_common_size", font_threshold)
         prev_font_size = font_size
 
     return processed_text
