@@ -628,72 +628,20 @@ def delete_vertical_text(text):
     processed_text = p1.sub("", text)
     return processed_text
 
-def assignment(df, centroids):
-    for i in centroids.keys():
-        # sqrt((x1 - x2)^2 - (y1 - y2)^2)
-        df['distance_from_{}'.format(i)] = (
-            np.sqrt(
-                (df['x'] - centroids[i][0]) ** 2
-                + (df['y'] - centroids[i][1]) ** 2
-            )
-        )
-    centroid_distance_cols = ['distance_from_{}'.format(i) for i in centroids.keys()]
-    df['closest'] = df.loc[:, centroid_distance_cols].idxmin(axis=1)
-    df['closest'] = df['closest'].map(lambda x: int(x.lstrip('distance_from_')))
-    df['color'] = df['closest'].map(lambda x: colmap[x])
-    return df
-
 
 def kmeans(font_size_list):
-    print("k-means")
-    print(font_size_list)
+    if(font_size_list == []):
+        return {}
     k = min(6, len(font_size_list))
-    data = []
-    for font_size in font_size_list:
-        data.append([font_size])
-    """
-    k = 3
-    np.random.seed(200)
-    centroids = {
-        i+1: np.random.randint(font_size_list[0], font_size_list[-1])
-        for i in range(k)
-    }
-    print(centroids)
-    for font_size in font_size_list:
-        min_dist = np.Inf
-        for key in centroids:
-            dist = (font_size - centroids[key]) ** 2
-            if(dist < min_dist):
-                # Assign to a better centroid
-                min_dist = dist
-    """
-    kmeans = KMeans(n_clusters=k, random_state=0, algorithm="full").fit(data)
-    headings = [None] * k
-    flat_list = [item for sublist in kmeans.cluster_centers_ for item in sublist]
-    i = 1
-    for element in sorted(kmeans.cluster_centers_, reverse=True):
-        headings[flat_list.index(element)] = i
-        i += 1
-    headings_dict = {}
-    i = 0
-    for font_size in font_size_list:
-        headings_dict[font_size] = headings[kmeans.labels_[i]]
-        i += 1
-
-    print(headings_dict)
-    print("ckmeans")
     intervals = list(reversed(ckmeans(font_size_list, k)))
-
-    headings_dict2 = {}
-
+    headings_dict = {}
     i = 1
     for sublist in intervals:
         for font_size in sublist:
-            headings_dict2[font_size] = i
+            headings_dict[font_size] = i
         i += 1
-    print(headings_dict2)
+    print(headings_dict)
     return headings_dict
-
 
 
 def analyze_font_size(text):

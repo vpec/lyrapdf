@@ -78,6 +78,9 @@ def fill_dp_matrix(data, S, J, K, N):
         fill_row_k(imin, N-1, k, S, J, sum_x, sum_x_sq, N)
 
 def ckmeans(data, n_clusters):
+    """
+        Pre: data must be sorted and unique
+    """
     if n_clusters <= 0:
         raise ValueError("Cannot classify into 0 or less clusters")
     if n_clusters > len(data):
@@ -85,11 +88,7 @@ def ckmeans(data, n_clusters):
 
     # if there's only one value, return it; there's no sensible way to split
     # it. This means that len(ckmeans([data], 2)) may not == 2. Is that OK?
-    unique = len(set(data))
-    if unique == 1:
-        return [data]
 
-    data.sort()
     n = len(data)
 
     S = np.zeros((n_clusters, n), dtype=np.float_)
