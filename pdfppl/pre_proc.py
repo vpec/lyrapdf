@@ -837,3 +837,22 @@ def replace_cid(text):
     p7 = re.compile(r'(\(cid:([0-9]+)\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
     text = p7.sub(lambda m: chr(int(m.group(2))+31),text)
     return text
+
+def replace_with_dash(text):
+    p1 = re.compile(r'(•|–)')
+    text = p1.sub(r'-',text)
+    return text
+
+def replace_with_fi(text):
+    p1 = re.compile(r'([a-z])(%|#)(\D)')
+    text = p1.sub(r'\1fi\3',text)
+    p2 = re.compile(r'(\D)(%|#)([a-z])')
+    text = p2.sub(r'\1fi\3',text)
+    return text
+
+def replace_with_fl(text):
+    p1 = re.compile(r'([a-z])(\+)(\D)')
+    text = p1.sub(r'\1fl\3',text)
+    p2 = re.compile(r'(\D)(\+)([a-z])')
+    text = p2.sub(r'\1fl\3',text)
+    return text
