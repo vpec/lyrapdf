@@ -856,3 +856,33 @@ def replace_with_fl(text):
     p2 = re.compile(r'(\D)(\+)([a-z])')
     text = p2.sub(r'\1fl\3',text)
     return text
+
+def join_lines(text):
+    #p1 = re.compile(r'(?:\w|,|-|\"|“|\)) *?\n+ *?(?:\w|\(|\"|\.|“|,)', re.MULTILINE | re.UNICODE)
+    #(^ *#+.*$)*(\n+^ *[^#].*$)*
+
+    processed_text = ""
+    p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
+    p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'((?:\w|,|-|\"|“|\)) *?)\n+( *?(?:\w|\(|\"|\.|“|,))', re.MULTILINE | re.UNICODE)
+    
+   
+    processed_match = ""
+    match_list = re.findall(p1, text)
+    for match in match_list:
+        if(p2.search(match) != None):
+            # It is a title
+            # Process previous standard text
+            processed_match = p3.sub(r'\1 \2',processed_match)
+            processed_text += processed_match
+            processed_match = ""
+            # Append title text
+            processed_text += match + '\n'
+        else:
+            # It is not a title
+            processed_match += match + '\n'
+    # Process previous standard text
+    processed_match = p3.sub(r'\1 \2',processed_match)
+    processed_text += processed_match
+    return processed_text
+    
