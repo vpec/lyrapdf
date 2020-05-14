@@ -685,17 +685,28 @@ def analyze_font_size(text):
     plt.hist(data)
     #plt.show()
 
+    if(0 in font_size_dict):
+        print("delete element 0")
+        del font_size_dict[0]
+
     percentage = 0.95
+    percentage_quote = 0.10
     sorted_font_size_dict = sorted(font_size_dict)
     print(sorted_font_size_dict)
     print(max(font_size_dict, key=font_size_dict.get))
 
     total = sum(font_size_dict.values())
     percentage_sum = 0
+    max_quote = 0
     i = 0 # Keep track of the index
     for key in sorted_font_size_dict:
         percentage_sum += (font_size_dict[key] / total)
         i += 1
+        if(percentage_sum <= percentage_quote):
+            print("size", key)
+            print("quote_sum", percentage_sum)
+            i_quote = i
+            max_quote = key
         if(percentage_sum >= percentage):
             font_threshold = key
             print("key", key)
@@ -703,12 +714,13 @@ def analyze_font_size(text):
             print("percentage_sum old", (percentage_sum - (font_size_dict[key] / total)))
             break
     headings_dict = kmeans(sorted_font_size_dict[i:])
+    print("Quote font", max_quote)
 
     #sns.distplot(data)
     #plt.show()
     # return key with max value (most frequent font size)
     #return max(font_size_dict, key=font_size_dict.get)
-    return font_threshold, headings_dict
+    return font_threshold, headings_dict, max_quote
 
 """
 def replace_br(text):
@@ -730,7 +742,7 @@ def remove_small_text(text):
     return processed_text
 
 def extract_text(text):
-    font_threshold, headings_dict = analyze_font_size(text)
+    font_threshold, headings_dict, max_quote = analyze_font_size(text)
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
     match_list = re.findall(p1, text)
     processed_text = ""
@@ -760,9 +772,10 @@ def extract_text(text):
     return json.dumps(text_list, ensure_ascii=False).encode('utf8')
 
 def extract_text_md(text):
-    font_threshold, headings_dict = analyze_font_size(text)
+    font_threshold, headings_dict, max_quote = analyze_font_size(text)
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
     p2 = re.compile(r'\n+', re.UNICODE)
+    p3 = re.compile(r'^ *\d+ *$', re.MULTILINE | re.UNICODE)
     match_list = re.findall(p1, text)
     processed_text = ""
     prev_font_size = 0
@@ -773,20 +786,21 @@ def extract_text_md(text):
         matched_text = match[2]
         # Convert matched text \n to <br>
         matched_text = p2.sub(r'<br>', matched_text)
-        if(prev_font_size <= font_threshold and font_size <= font_threshold):
-            processed_text += '\n' + matched_text
-        elif(font_size == prev_font_size):
-            processed_text += ' ' + matched_text
-        elif(font_size > font_threshold):
-            processed_text += '\n' + '#' * headings_dict[font_size] + ' ' + matched_text
-            #processed_text += '\n### ' + matched_text
-        elif(prev_font_size > font_threshold):
-            processed_text += '\n' + matched_text
-        else:  
-            print("font_size", font_size)
-            print("prev_font_size", prev_font_size)
-            print("most_common_size", font_threshold)
-        prev_font_size = font_size
+        if(p3.search(matched_text) == None or font_size > max_quote):
+            if(prev_font_size <= font_threshold and font_size <= font_threshold):
+                processed_text += '\n' + matched_text
+            elif(font_size == prev_font_size):
+                processed_text += ' ' + matched_text
+            elif(font_size > font_threshold):
+                processed_text += '\n' + '#' * headings_dict[font_size] + ' ' + matched_text
+                #processed_text += '\n### ' + matched_text
+            elif(prev_font_size > font_threshold):
+                processed_text += '\n' + matched_text
+            else:  
+                print("font_size", font_size)
+                print("prev_font_size", prev_font_size)
+                print("most_common_size", font_threshold)
+            prev_font_size = font_size
 
     return processed_text
 
@@ -864,7 +878,7 @@ def join_lines(text):
     processed_text = ""
     p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
-    p3 = re.compile(r'((?:\w|,|-|\"|“|\)) *?)\n+( *?(?:\w|\(|\"|\.|“|,))', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'((?:\w|,|-|\"|“|\(|\)|;|%|€|≥|«|»|/|=|®) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|,|€|≥|«|»|&|;|:|/|=|®))', re.MULTILINE | re.UNICODE)
     
    
     processed_match = ""
@@ -886,3 +900,30 @@ def join_lines(text):
     processed_text += processed_match
     return processed_text
     
+
+def join_words(text):
+    p1 = re.compile(r'(\w) *- *\n+ *(\w)', re.MULTILINE | re.UNICODE)
+    processed_text = p1.sub(r'\1\2', text)
+    return processed_text
+
+def remove_duplicated_whitespaces(text):
+    p1 = re.compile(r' +', re.MULTILINE | re.UNICODE)
+    p2 = re.compile(r'^ +', re.MULTILINE | re.UNICODE)
+    processed_text = p1.sub(r' ', text)
+    processed_text = p2.sub(r'', processed_text)
+    return processed_text
+    
+def join_et_al(text):
+    p1 = re.compile(r'(et +al *\.) *\n+ *(.)', re.UNICODE)
+    processed_text = p1.sub(r'\1 \2', text)
+    return processed_text
+
+def join_beta(text):
+    p1 = re.compile(r'(β) *\n+ *(-)', re.UNICODE)
+    processed_text = p1.sub(r'\1\2', text)
+    return processed_text
+
+def join_vs(text):
+    p1 = re.compile(r'(vs) *\. *\n+ *(.)', re.UNICODE)
+    processed_text = p1.sub(r'\1. \2', text)
+    return processed_text
