@@ -775,7 +775,7 @@ def extract_text_md(text):
     font_threshold, headings_dict, max_quote = analyze_font_size(text)
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
     p2 = re.compile(r'\n+', re.UNICODE)
-    p3 = re.compile(r'^ *\d+ *$', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'^ *\d+(?: *(?:,|-) *\d+)* *(?:<br>)*$', re.MULTILINE | re.UNICODE)
     match_list = re.findall(p1, text)
     processed_text = ""
     prev_font_size = 0
@@ -878,7 +878,7 @@ def join_lines(text):
     processed_text = ""
     p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
-    p3 = re.compile(r'((?:\w|,|-|\"|“|\(|\)|;|%|€|≥|«|»|/|=|®) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|,|€|≥|«|»|&|;|:|/|=|®))', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'((?:\w|,|-|\"|“|\(|\)|;|%|€|≥|≤|«|»|/|=|®|±) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|,|€|≥|≤|«|»|&|;|:|/|=|®|±))', re.MULTILINE | re.UNICODE)
     
    
     processed_match = ""
