@@ -878,7 +878,8 @@ def join_lines(text):
     processed_text = ""
     p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
-    p3 = re.compile(r'((?:\w|,|-|\"|“|\(|\)|;|%|€|≥|≤|«|»|/|=|®|±|∆) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|,|€|≥|≤|«|»|&|;|:|/|=|®|±|∆))', re.MULTILINE | re.UNICODE)
+    #p3 = re.compile(r'((?:\w|,|-|\"|“|\(|\)|;|%|€|≥|≤|«|»|/|=|®|±|∆) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|,|€|≥|≤|«|»|&|;|:|/|=|®|±|∆))', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'((?:[^\.\n:]) *?)\n+( *?(?:.))', re.MULTILINE | re.UNICODE)
     
    
     processed_match = ""
@@ -903,7 +904,9 @@ def join_lines(text):
 
 def join_words(text):
     p1 = re.compile(r'(\w) *- *\n+ *(\w)', re.MULTILINE | re.UNICODE)
+    #p2 = re.compile(r'([a-z]) *(?:\n+ *)?- *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
     processed_text = p1.sub(r'\1\2', text)
+    #processed_text = p2.sub(r'\1\2', processed_text)
     return processed_text
 
 def remove_duplicated_whitespaces(text):
