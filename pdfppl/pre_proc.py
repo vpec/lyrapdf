@@ -35,7 +35,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.util import ngrams
 from collections import Counter
-from unicodedata import normalize
+#from unicodedata import normalize
 from os.path import exists
 from os import mknod
 import json
@@ -45,6 +45,9 @@ import numpy as np
 import seaborn as sns
 from sklearn.cluster import KMeans
 from pdfppl.ckmeans import ckmeans
+import sys
+from unicodedata import category
+
 
 #    fichero_text_append('ficheros_salida/salida_ConteoBigramas.txt', "Fin del top 100 ---") 
 def append_text_file(path,text):
@@ -903,6 +906,7 @@ def join_lines(text):
 
 def join_words(text):
     p1 = re.compile(r'(\w) *- *\n+ *(\w)', re.MULTILINE | re.UNICODE)
+    #\n- *\n* *[a-z]
     #p2 = re.compile(r'([a-z]) *(?:\n+ *)?- *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
     processed_text = p1.sub(r'\1\2', text)
     #processed_text = p2.sub(r'\1\2', processed_text)
@@ -933,4 +937,15 @@ def join_vs(text):
 def fix_enye(text):
     p1 = re.compile(r'˜ *n', re.UNICODE)
     processed_text = p1.sub(r'ñ', text)
+    return processed_text
+
+def remove_non_printable(text):
+    # Get all unicode characters
+    all_chars = (chr(i) for i in range(sys.maxunicode))
+    # Get all non printable characters
+    control_chars = ''.join(c for c in all_chars if category(c) == 'Cc')
+    # Create regex of above characters
+    p1 = re.compile('[%s]' % re.escape(control_chars))
+    # Substitute these characters by empty string in the original string.
+    processed_text = p1.sub(r'', text)
     return processed_text
