@@ -878,9 +878,8 @@ def join_lines(text):
     processed_text = ""
     p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
-    p3 = re.compile(r'((?:\w|,|-|\"|“|\(|\)|;|%|€|≥|≤|«|»|/|=|®|±|∆) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|,|€|≥|≤|«|»|&|;|:|/|=|®|±|∆))', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'((?:\w|,|-|\"|“|\(|\)|;|%|€|≥|≤|«|»|/|=|®|©|±|∆) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|,|€|≥|≤|«|»|&|;|:|/|=|®|©|±|∆))', re.MULTILINE | re.UNICODE)
     
-   
     processed_match = ""
     match_list = re.findall(p1, text)
     for match in match_list:
@@ -926,4 +925,9 @@ def join_beta(text):
 def join_vs(text):
     p1 = re.compile(r'(vs) *\. *\n+ *(.)', re.UNICODE)
     processed_text = p1.sub(r'\1. \2', text)
+    return processed_text
+
+def fix_enye(text):
+    p1 = re.compile(r'˜ *n', re.UNICODE)
+    processed_text = p1.sub(r'ñ', text)
     return processed_text
