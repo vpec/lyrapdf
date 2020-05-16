@@ -90,7 +90,7 @@ def process(text, output_dir, file_name):
 	"""
 	processed_text = ( pre_proc.extract_text_md(processed_text_html)
 														| p(pre_proc.replace_br)
-														| p(pre_proc.remove_non_printable)
+														#| p(pre_proc.remove_non_printable)
 														| p(pre_proc.remove_blank_lines)
 														| p(pre_proc.replace_cid)
 														| p(pre_proc.replace_with_dash)

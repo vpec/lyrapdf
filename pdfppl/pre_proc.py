@@ -43,7 +43,7 @@ import matplotlib.pylab as plt
 from scipy.stats import norm
 import numpy as np
 import seaborn as sns
-from sklearn.cluster import KMeans
+#from sklearn.cluster import KMeans
 from pdfppl.ckmeans import ckmeans
 import sys
 from unicodedata import category
@@ -789,7 +789,7 @@ def extract_text_md(text):
         matched_text = match[2]
         # Convert matched text \n to <br>
         matched_text = p2.sub(r'<br>', matched_text)
-        if(p3.search(matched_text) == None or font_size > max_quote):
+        if((p3.search(matched_text) == None or font_size > max_quote) and font_size > 0):
             if(prev_font_size <= font_threshold and font_size <= font_threshold):
                 processed_text += '\n' + matched_text
             elif(font_size == prev_font_size):
@@ -858,6 +858,7 @@ def replace_cid(text):
 def replace_with_dash(text):
     p1 = re.compile(r'(•|–)')
     text = p1.sub(r'-',text)
+    text = text.replace(chr(61623), "-")
     return text
 
 def replace_with_fi(text):
@@ -940,8 +941,17 @@ def fix_enye(text):
     return processed_text
 
 def remove_non_printable(text):
+    return text
+    return text.replace(chr(61623), "-")
+
+
+
+    return bytes(text, 'utf-8').decode('utf-8', 'ignore')
+    return text.strip().decode('utf-8','ignore').encode("utf-8")
     # Get all unicode characters
+    print(range(sys.maxunicode))
     all_chars = (chr(i) for i in range(sys.maxunicode))
+    print(all_chars)
     # Get all non printable characters
     control_chars = ''.join(c for c in all_chars if category(c) == 'Cc')
     # Create regex of above characters
