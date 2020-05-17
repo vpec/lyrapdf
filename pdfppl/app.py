@@ -101,6 +101,7 @@ def process(text, output_dir, file_name):
 														| p(pre_proc.join_beta)
 														| p(pre_proc.join_vs)
 														| p(pre_proc.fix_enye)
+														| p(pre_proc.join_ellipsis)
 														| p(pre_proc.remove_duplicated_whitespaces)
 					)
 	

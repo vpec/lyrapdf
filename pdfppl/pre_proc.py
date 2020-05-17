@@ -719,6 +719,10 @@ def analyze_font_size(text):
     headings_dict = kmeans(sorted_font_size_dict[i:])
     print("Quote font", max_quote)
 
+    max_quote = max(max_quote, font_threshold * 0.8)
+
+    print("New Quote font", max_quote)
+
     #sns.distplot(data)
     #plt.show()
     # return key with max value (most frequent font size)
@@ -882,7 +886,7 @@ def join_lines(text):
     processed_text = ""
     p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
-    p3 = re.compile(r'((?:\w|,|-|\"|“|\(|\)|;|%|€|≥|≤|«|»|/|=|®|©|±|∆) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|,|€|≥|≤|«|»|&|;|:|/|=|®|©|±|∆))', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'((?:\w|,|-|\"|“|’|\(|\)|;|%|€|≥|≤|«|»|/|=|®|©|±|∆) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|’|,|€|≥|≤|«|»|&|;|:|/|=|®|©|±|∆))', re.MULTILINE | re.UNICODE)
     #p3 = re.compile(r'((?:[^\.\n:]) *?)\n+( *?(?:.))', re.MULTILINE | re.UNICODE)
     
     processed_match = ""
@@ -959,3 +963,9 @@ def remove_non_printable(text):
     # Substitute these characters by empty string in the original string.
     processed_text = p1.sub(r'', text)
     return processed_text
+
+def join_ellipsis(text):
+    p1 = re.compile(r'^(#+.*\.\.\.) *\n+#+ *([a-zA-Z])', re.MULTILINE | re.UNICODE)
+    processed_text = p1.sub(r'\1 \2', text)
+    return processed_text
+    
