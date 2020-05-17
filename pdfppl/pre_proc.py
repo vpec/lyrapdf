@@ -966,6 +966,8 @@ def remove_non_printable(text):
 
 def join_ellipsis(text):
     p1 = re.compile(r'^(#+.*\.\.\.) *\n+#+ *([a-zA-Z])', re.MULTILINE | re.UNICODE)
+    p2 = re.compile(r'(\.\.\.) *\n+ *([a-z])', re.UNICODE)
     processed_text = p1.sub(r'\1 \2', text)
+    processed_text = p2.sub(r'\1 \2', processed_text)
     return processed_text
     
