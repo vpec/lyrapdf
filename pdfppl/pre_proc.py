@@ -886,7 +886,7 @@ def join_lines(text):
     processed_text = ""
     p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
-    p3 = re.compile(r'((?:\w|,|-|\"|“|’|\(|\)|;|%|€|≥|≤|«|»|/|=|®|©|±|∆|\[|\]) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|’|,|€|≥|≤|«|»|&|;|:|/|=|®|©|±|∆|\[|\]))', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'((?:\w|,|-|\"|“|”|’|\(|\)|;|%|€|≥|≤|«|»|/|=|®|©|±|∆|\[|\]) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|”|’|,|€|≥|≤|«|»|&|;|:|/|=|®|©|±|∆|\[|\]))', re.MULTILINE | re.UNICODE)
     #p3 = re.compile(r'((?:[^\.\n:]) *?)\n+( *?(?:.))', re.MULTILINE | re.UNICODE)
     
     processed_match = ""
