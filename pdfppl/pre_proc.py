@@ -979,4 +979,6 @@ def join_subtraction(text):
     return processed_text
 
 def fix_marks(text):
-    pass
+    p1 = re.compile(r'(\w|\)) *(\.|,|:|;)', re.UNICODE)
+    processed_text = p1.sub(r'\1\2', text)
+    return processed_text
