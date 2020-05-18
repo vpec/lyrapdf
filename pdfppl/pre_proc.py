@@ -971,3 +971,7 @@ def join_ellipsis(text):
     processed_text = p2.sub(r'\1 \2', processed_text)
     return processed_text
     
+def join_subtraction(text):
+    p1 = re.compile(r'(\d) *\n+ *(- *\d)', re.UNICODE)
+    processed_text = p1.sub(r'\1 \2', text)
+    return processed_text
