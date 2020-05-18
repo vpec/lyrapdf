@@ -918,10 +918,12 @@ def join_by_hyphen(text):
     return processed_text
 
 def remove_duplicated_whitespaces(text):
-    p1 = re.compile(r' +', re.MULTILINE | re.UNICODE)
-    p2 = re.compile(r'^ +', re.MULTILINE | re.UNICODE)
+    p1 = re.compile(r'\t+', re.MULTILINE | re.UNICODE)
+    p2 = re.compile(r' +', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'^ +', re.MULTILINE | re.UNICODE)
     processed_text = p1.sub(r' ', text)
-    processed_text = p2.sub(r'', processed_text)
+    processed_text = p2.sub(r' ', processed_text)
+    processed_text = p3.sub(r'', processed_text)
     return processed_text
     
 def join_et_al(text):
@@ -975,3 +977,6 @@ def join_subtraction(text):
     p1 = re.compile(r'(\d) *\n+ *(- *\d)', re.UNICODE)
     processed_text = p1.sub(r'\1 \2', text)
     return processed_text
+
+def fix_marks(text):
+    pass
