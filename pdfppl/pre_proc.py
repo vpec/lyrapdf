@@ -909,8 +909,8 @@ def join_lines(text):
     return processed_text
     
 
-def join_words(text):
-    p1 = re.compile(r'(\w) *- *\n+ *(\w)', re.MULTILINE | re.UNICODE)
+def join_by_hyphen(text):
+    p1 = re.compile(r'(\w) *(?:-|\u00AD) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
     #\n- *\n* *[a-z]
     #p2 = re.compile(r'([a-z]) *(?:\n+ *)?- *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
     processed_text = p1.sub(r'\1\2', text)

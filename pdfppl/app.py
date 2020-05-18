@@ -94,7 +94,7 @@ def process(text, output_dir, file_name):
 														| p(pre_proc.remove_blank_lines)
 														| p(pre_proc.replace_cid)
 														| p(pre_proc.replace_with_dash)
-														| p(pre_proc.join_words)
+														| p(pre_proc.join_by_hyphen)
 														| p(pre_proc.join_lines)
 														| p(pre_proc.join_lines)
 														| p(pre_proc.join_et_al)
@@ -105,7 +105,7 @@ def process(text, output_dir, file_name):
 														| p(pre_proc.remove_duplicated_whitespaces)
 					)
 	
-	pre_proc.create_text_file(output_dir + "/" + file_name + "_post.md", processed_text)			
+	pre_proc.create_text_file(output_dir + "/" + file_name + "_pre.md", processed_text)			
 	#pre_proc.create_json_file(output_dir + "/" + file_name + ".json", processed_text)
 	#pre_proc.create_text_file(output_dir + "/html2_" + file_name + ".html", processed_text)
 	# Removed headers' text (for debugging)
