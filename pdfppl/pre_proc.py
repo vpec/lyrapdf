@@ -860,7 +860,7 @@ def replace_cid(text):
     return text
 
 def replace_with_dash(text):
-    p1 = re.compile(r'(•|–)')
+    p1 = re.compile(r'(•|–|·|—)')
     text = p1.sub(r'-',text)
     text = text.replace(chr(61623), "-")
     return text
@@ -887,7 +887,9 @@ def join_lines(text):
     p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
     p3 = re.compile(r'((?:\w|,|-|\"|“|”|’|\(|\)|;|%|€|≥|≤|«|»|/|=|®|©|±|∆|\[|\]) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|”|’|,|€|≥|≤|«|»|&|;|:|/|=|®|©|±|∆|\[|\]))', re.MULTILINE | re.UNICODE)
-    #p3 = re.compile(r'((?:[^\.\n:]) *?)\n+( *?(?:.))', re.MULTILINE | re.UNICODE)
+    #p3 = re.compile(r'([^\.\n: \+\*\?¿√] *?)\n+( *?[^\-\n \+\*\?¿√])', re.MULTILINE | re.UNICODE)
+    
+    # caution:  
     
     processed_match = ""
     match_list = re.findall(p1, text)
@@ -981,4 +983,9 @@ def join_subtraction(text):
 def fix_marks(text):
     p1 = re.compile(r'(\w|\)) *(\.|,|:|;)', re.UNICODE)
     processed_text = p1.sub(r'\1\2', text)
+    return processed_text
+
+def remove_false_titles(text):
+    p1 = re.compile(r'^#+ *([^\-\w\n]*)$', re.MULTILINE | re.UNICODE)
+    processed_text = p1.sub(r'\1', text)
     return processed_text
