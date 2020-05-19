@@ -860,7 +860,7 @@ def replace_cid(text):
     return text
 
 def replace_with_dash(text):
-    p1 = re.compile(r'(•|–|·|—)')
+    p1 = re.compile(r'(•|–|·|—|−)')
     text = p1.sub(r'-',text)
     text = text.replace(chr(61623), "-")
     return text
