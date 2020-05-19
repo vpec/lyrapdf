@@ -860,7 +860,7 @@ def replace_cid(text):
     return text
 
 def replace_with_dash(text):
-    p1 = re.compile(r'(•|–|·|—|−)')
+    p1 = re.compile(r'(•|–|·|—|−|―|▪)')
     text = p1.sub(r'-',text)
     text = text.replace(chr(61623), "-")
     return text
@@ -886,8 +886,8 @@ def join_lines(text):
     processed_text = ""
     p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
-    p3 = re.compile(r'((?:\w|,|-|\"|“|”|’|\(|\)|;|%|€|≥|≤|«|»|/|=|®|©|±|∆|\[|\]) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|”|’|,|€|≥|≤|«|»|&|;|:|/|=|®|©|±|∆|\[|\]))', re.MULTILINE | re.UNICODE)
-    #p3 = re.compile(r'([^\.\n: \+\*\?¿√] *?)\n+( *?[^\-\n \+\*\?¿√])', re.MULTILINE | re.UNICODE)
+    #p3 = re.compile(r'((?:\w|,|-|\"|“|”|’|\(|\)|;|%|€|≥|≤|«|»|/|=|®|©|±|∆|\[|\]) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|”|’|,|€|≥|≤|«|»|&|;|:|/|=|®|©|±|∆|\[|\]))', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'([^\.\n: \+\*\?¿√] *?)\n+( *?[^\-\n \+\*\?¿√])', re.MULTILINE | re.UNICODE)
     
     # caution:  
     
@@ -916,8 +916,27 @@ def join_by_hyphen(text):
     #\n- *\n* *[a-z]
     #p2 = re.compile(r'([a-z]) *(?:\n+ *)?- *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
     processed_text = p1.sub(r'\1\2', text)
-    #processed_text = p2.sub(r'\1\2', processed_text)
-    return processed_text
+
+    
+    p2 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'^#', re.MULTILINE | re.UNICODE)
+    p4 = re.compile(r'^(#+[^\-\u00AD\n]*[a-zA-Z])(?:\-|\u00AD) +([a-zA-Z])', re.MULTILINE | re.UNICODE)
+    
+    match_list = re.findall(p2, processed_text)
+    processed_text2 = ""
+
+    for match in match_list:
+        if(p3.search(match) == None):
+            # Standard text
+            processed_text2 += match + '\n'
+        else:
+            # Title text
+            while(p4.search(match) != None):
+                # Contains a hyphen
+                match = p4.sub(r'\1\2', match)
+            processed_text2 += match + '\n'
+    
+    return processed_text2
 
 def remove_duplicated_whitespaces(text):
     p1 = re.compile(r'\t+', re.MULTILINE | re.UNICODE)
@@ -988,4 +1007,11 @@ def fix_marks(text):
 def remove_false_titles(text):
     p1 = re.compile(r'^#+ *([^\-\w\n]*)$', re.MULTILINE | re.UNICODE)
     processed_text = p1.sub(r'\1', text)
+    return processed_text
+
+def join_by_colon(text):
+    p1 = re.compile(r'(:) *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
+    #p1 = re.compile(r'(:) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
+
+    processed_text = p1.sub(r'\1 \2', text)
     return processed_text
