@@ -1015,3 +1015,15 @@ def join_by_colon(text):
 
     processed_text = p1.sub(r'\1 \2', text)
     return processed_text
+
+def remove_duplicated_dashes(text):
+    p1 = re.compile(r'^ *(- +)+', re.MULTILINE | re.UNICODE)
+    #p1 = re.compile(r'(:) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
+
+    processed_text = p1.sub(r'- ', text)
+    return processed_text
+
+def remove_useless_lines(text):
+    p1 = re.compile(r'^[^\w\n]*$', re.MULTILINE | re.UNICODE)
+    processed_text = p1.sub(r'', text)
+    return processed_text
