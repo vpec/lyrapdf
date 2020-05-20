@@ -1027,3 +1027,39 @@ def remove_useless_lines(text):
     p1 = re.compile(r'^[^\w\n]*$', re.MULTILINE | re.UNICODE)
     processed_text = p1.sub(r'', text)
     return processed_text
+
+def convert_md_to_json(text, name):
+    p1 = re.compile(r'^.+$', re.MULTILINE | re.UNICODE)
+    p2 = re.compile(r'^(#+) *(.*)$', re.MULTILINE | re.UNICODE)
+    match_list = re.findall(p1, text)
+    content_list = []
+    level = 0
+    prev_level = level
+    
+    for match in match_list:
+        heading_match = p2.search(match)
+        if(heading_match == None):
+            # Standard text
+            level = 7
+            x = {
+                "text": match
+            }
+            if(level > prev_level):
+                content_list
+            
+            content_list.append(x)
+        else:
+            # Title text
+            level = len(heading_match.group(1))
+            x = {
+                "h" + str(len(heading_match.group(1))) : heading_match.group(2),
+                "text" : match
+            }
+            content_list.append(x)
+        prev_level = level
+        
+    doc = {
+        "document": name,
+        "content" : content_list
+    }
+    return json.dumps(doc, ensure_ascii=False).encode('utf8')
