@@ -783,6 +783,7 @@ def extract_text_md(text):
     p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
     p2 = re.compile(r'\n+', re.UNICODE)
     p3 = re.compile(r'^ *\d+(?: *(?:,|-) *\d+)* *(?:<br>)*$', re.MULTILINE | re.UNICODE)
+    p4 = re.compile(r'(^|<br>)( *#)', re.MULTILINE | re.UNICODE)
     match_list = re.findall(p1, text)
     processed_text = ""
     prev_font_size = 0
@@ -793,6 +794,9 @@ def extract_text_md(text):
         matched_text = match[2]
         # Convert matched text \n to <br>
         matched_text = p2.sub(r'<br>', matched_text)
+
+        matched_text = p4.sub(r'\1\\\2', matched_text)
+
         if((p3.search(matched_text) == None or font_size > max_quote) and font_size > 0):
             if(prev_font_size <= font_threshold and font_size <= font_threshold):
                 processed_text += '\n' + matched_text
@@ -1031,6 +1035,7 @@ def remove_useless_lines(text):
 def convert_md_to_json(text, name):
     p1 = re.compile(r'^.+$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^(#+) *(.*)$', re.MULTILINE | re.UNICODE)
+    p3 = re.compile(r'\\ *#', re.MULTILINE | re.UNICODE)
     match_list = re.findall(p1, text)
     doc = {
         "document": name,
@@ -1046,6 +1051,7 @@ def convert_md_to_json(text, name):
         if(heading_match == None):
             # Standard text
             level = 7
+            match = p3.sub(r'#', match)
             x = {
                 "text": match,
                 "level" : level
@@ -1054,6 +1060,7 @@ def convert_md_to_json(text, name):
         else:
             # Title text
             level = len(heading_match.group(1))
+            match = p3.sub(r'#', match)
             x = {
                 "h" + str(level) : heading_match.group(2),
                 "level" : level
