@@ -1032,7 +1032,12 @@ def convert_md_to_json(text, name):
     p1 = re.compile(r'^.+$', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r'^(#+) *(.*)$', re.MULTILINE | re.UNICODE)
     match_list = re.findall(p1, text)
-    content_list = []
+    doc = {
+        "document": name,
+        "level" : 0
+    }
+    content_list = [[doc]]
+
     level = 0
     prev_level = level
     
@@ -1042,24 +1047,62 @@ def convert_md_to_json(text, name):
             # Standard text
             level = 7
             x = {
-                "text": match
+                "text": match,
+                "level" : level
             }
-            if(level > prev_level):
-                content_list
             
-            content_list.append(x)
         else:
             # Title text
             level = len(heading_match.group(1))
             x = {
-                "h" + str(len(heading_match.group(1))) : heading_match.group(2),
-                "text" : match
+                "h" + str(level) : heading_match.group(2),
+                "level" : level
             }
-            content_list.append(x)
+
+        #print("level", level)
+        if(level > prev_level):
+            content_list.append([x]) # New sublist
+        elif(level < prev_level):
+            
+
+
+            while(content_list[-2][-1]["level"] >= level):
+                content_list[-2][-1]["content"] = content_list[-1]
+                del content_list[-1]
+            content_list[-1].append(x)
+            #print("level", level)
+            #print("content_list[-1][-1]['level']", content_list[-1][-1]["level"])
+            """
+            #print(content_list)
+            print("pre")
+            print("len(content_list)", len(content_list))
+            print("len(content_list[-1])", len(content_list[-1]))
+            print("len(content_list[-2])", len(content_list[-2]))
+            
+            #print(content_list)
+            a = content_list[-1]
+            b =  content_list[-2][-1]
+            #print(b)
+
+            content_list[-2][-1]["content"] = content_list[-1]
+            del content_list[-1]
+            #if(len(content_list) == 0):
+            #    content_list.append([])
+            #content_list[-1].append(x)
+            print("post")
+            print("len(content_list)", len(content_list))
+            print("len(content_list[-1])", len(content_list[-1]))
+            print("len(content_list[-2])", len(content_list[-2]))
+            """
+        else:
+            #if(len(content_list) == 0):
+            #    content_list.append([])
+            content_list[-1].append(x)
+
         prev_level = level
-        
-    doc = {
-        "document": name,
-        "content" : content_list
-    }
+
+    while(content_list[-1][-1]["level"] > 0):
+        content_list[-2][-1]["content"] = content_list[-1]
+        del content_list[-1]        
+    
     return json.dumps(doc, ensure_ascii=False).encode('utf8')
