@@ -946,9 +946,11 @@ def remove_duplicated_whitespaces(text):
     p1 = re.compile(r'\t+', re.MULTILINE | re.UNICODE)
     p2 = re.compile(r' +', re.MULTILINE | re.UNICODE)
     p3 = re.compile(r'^ +', re.MULTILINE | re.UNICODE)
+    p4 = re.compile(r' +$', re.MULTILINE | re.UNICODE)
     processed_text = p1.sub(r' ', text)
     processed_text = p2.sub(r' ', processed_text)
     processed_text = p3.sub(r'', processed_text)
+    processed_text = p4.sub(r'', processed_text)
     return processed_text
     
 def join_et_al(text):
