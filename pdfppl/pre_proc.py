@@ -1028,8 +1028,15 @@ def remove_duplicated_dashes(text):
     return processed_text
 
 def remove_useless_lines(text):
+    # Useless lines
     p1 = re.compile(r'^[^\w\n]*$', re.MULTILINE | re.UNICODE)
-    processed_text = p1.sub(r'', text)
+    processed_text = p1.sub(r'', text)   
+    return processed_text
+
+def remove_repeated_strings(text):
+    # Repeated strings
+    p1 = re.compile(r'([^#IVX\n]{1,4}?)(\1){3,}', re.UNICODE)
+    processed_text = p1.sub(r'\1', text)
     return processed_text
 
 def convert_md_to_json(text, name):
