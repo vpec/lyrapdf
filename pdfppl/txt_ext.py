@@ -3,7 +3,7 @@ from pdfminer.converter import TextConverter, PDFPageAggregator, XMLConverter, H
 from pdfminer.layout import LAParams, LTTextBoxHorizontal
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfdevice import TagExtractor
-from io import StringIO
+from io import StringIO, BytesIO
 from pdfppl import pre_proc #, p2t_constants
 import re
 import time
@@ -134,7 +134,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _laparams = LAParams(detect_vertical=True)
     #  _device = TextConverter(_rsrcmgr, _retstr, codec=_codec,laparams=_laparams)
     #_device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
-    _device = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
+    _device = HTMLConverter(_rsrcmgr, _retstr, codec=_codec, laparams=_laparams)
     _file = open(path, 'rb')
     
     '''
@@ -152,10 +152,12 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _interpreter = PDFPageInterpreter(_rsrcmgr, _device)
 
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_tag)
+    """
     _rsrcmgr_html = PDFResourceManager()
     _retstr_html = StringIO()
     _device_html = HTMLConverter(_rsrcmgr_html, _retstr_html, laparams=_laparams)
     _interpreter_html = PDFPageInterpreter(_rsrcmgr_html, _device_html)
+    """
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_xml)
     #_interpreter = PDFPageInterpreter(_rsrcmgr, _aggregator)
 
@@ -173,7 +175,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _rsrcmgr_default = PDFResourceManager()
     _retstr_default = StringIO()
     _laparams_default = LAParams() # detect_vertical=False
-    _device_default = HTMLConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams_default)
+    _device_default = HTMLConverter(_rsrcmgr_default, _retstr_default, codec=_codec, laparams=_laparams_default)
     _interpreter_default = PDFPageInterpreter(_rsrcmgr_default, _device_default)
 
     _text = ""

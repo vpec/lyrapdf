@@ -208,18 +208,25 @@ def run():
 		if not exists(output_dir):
 			makedirs(output_dir)
 
+		function_args = []
+		for pdf in pdf_list:
+			function_args.append((input_dir, pdf))
+
+		print(function_args)
 		
 		# Multithreading
+		print("Number of CPU:", cpu_count())
 		"""
-		for pdf_path in pdf_list:
-			action_process = Process(target=extract_and_process, args=(input_dir, pdf_path,))
-			action_process.start()
-			#action_process.join(timeout=_timeout)
-		return 0
+		p = Pool(cpu_count())
+		with p:
+  			p.starmap(extract_and_process, function_args)
 		"""
 
+
+		
 		for pdf_path in pdf_list:
 			extract_and_process(input_dir, pdf_path)
+	
 			
 	else:
 		print("Invalid number of arguments")
