@@ -12,6 +12,10 @@ from pdfppl import metadata
 import ntpath
 from pdfminer.pdfparser import PDFSyntaxError
 from pdfminer.pdfdocument import PDFTextExtractionNotAllowed
+from multiprocessing import Process, Lock, cpu_count
+from multiprocessing import Pool
+import time
+from random import randint
 
 
 def path_leaf(path):
@@ -119,6 +123,28 @@ def process(text, output_dir, file_name):
 	# Removed headers' text (for debugging)
 	#pre_proc.create_text_file(output_dir + "/removed_" + file_name + ".html", processed_text_tuple[1])
 
+
+def extract_and_process(input_dir, pdf_path):
+	print('Extracting text from: ', pdf_path)
+	try:	
+		#print(input_dir + "/output")
+		texto_extraido = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+		# nombre_archivo = archivos[i]
+		
+		print("Extraction finished: "+ pdf_path + ", starting processing")
+		process(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
+		#texto_procesado = primer_procesado(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
+		
+		#texto_procesado = (      primer_procesado(texto_extraido) | p(segundo_procesado) 
+		#                    )
+		
+		#texto_total = texto_total + texto_procesado + '\n\n'
+	except PDFSyntaxError:
+		print("PDFSyntaxError: Is this really a PDF? ", pdf_path)
+	except PDFTextExtractionNotAllowed as e:
+		print(e)
+
+
 def get_listPDF(input_dir):
 	'''
 	:return: Returns list of file paths inside input_dir
@@ -129,7 +155,20 @@ def get_listPDF(input_dir):
 
 	return path_archivos,archivos
 
+def f(x):
+	time.sleep(randint(10,100)/100)
+	
+	print(x)
+
 def run_test():
+	print("Number of CPU:", cpu_count())
+	p = Pool(cpu_count())
+	
+	number_list = list(range(50))
+	with p:
+  		p.map(f, number_list)
+
+	return 0
 	input_dir = "/home/victor/pdfppl/pdfppl/resources/raw"
 	output_dir = "/home/victor/pdfppl/pdfppl/resources/output"
 	raw_text_list, archivos = get_listPDF(input_dir)
@@ -169,54 +208,18 @@ def run():
 		if not exists(output_dir):
 			makedirs(output_dir)
 
+		
+		# Multithreading
+		"""
 		for pdf_path in pdf_list:
-			print('Extracting text from: ', pdf_path)
+			action_process = Process(target=extract_and_process, args=(input_dir, pdf_path,))
+			action_process.start()
+			#action_process.join(timeout=_timeout)
+		return 0
+		"""
 
-			#e2.extract(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+		for pdf_path in pdf_list:
+			extract_and_process(input_dir, pdf_path)
 			
-			
-			#  etiquetado.set_path(archivos[i])
-			#  etiquetado.set_document(archivos[i].split(".")[0])
-			
-			# metadata.get_metadata_pypdf2(pdf_path)
-			#txt_ext.convert_pdf_to_txt_pypdf2(pdf_path, input_dir + "/output", path_leaf(pdf_path))
-			
-			
-			#outlines.get_outlines_pdfminer(pdf_path)
-			
-
-			#e3.extract(pdf_path)
-			try:
-			
-				#print(input_dir + "/output")
-				texto_extraido = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output", path_leaf(pdf_path))
-				# nombre_archivo = archivos[i]
-				
-				print("Extraction finished: "+ pdf_path + ", starting processing")
-				process(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
-				#texto_procesado = primer_procesado(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
-				
-				#texto_procesado = (      primer_procesado(texto_extraido) | p(segundo_procesado) 
-				#                    )
-				
-				#texto_total = texto_total + texto_procesado + '\n\n'
-			except PDFSyntaxError:
-				print("PDFSyntaxError: Is this really a PDF? ", pdf_path)
-			except PDFTextExtractionNotAllowed as e:
-				print(e)
-			
-			i+=1
-			
-			
-			
-			
-			
-			
-		# mostrar_estadisticas()
-		# return texto_total
-
-
-
-
 	else:
 		print("Invalid number of arguments")
