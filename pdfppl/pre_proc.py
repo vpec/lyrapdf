@@ -1037,7 +1037,7 @@ def remove_useless_lines(text):
 
 def remove_repeated_strings(text):
     # Repeated strings
-    p1 = re.compile(r'([^#IVX\n]{1,4}?)(\1){3,}', re.UNICODE)
+    p1 = re.compile(r'([^#IVX0\n]{1,4}?)(\1){3,}', re.UNICODE)
     processed_text = p1.sub(r'\1', text)
     return processed_text
 
