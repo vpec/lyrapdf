@@ -216,16 +216,19 @@ def run():
 		
 		# Multithreading
 		print("Number of CPU:", cpu_count())
+		
 		"""
 		p = Pool(cpu_count())
 		with p:
   			p.starmap(extract_and_process, function_args)
+	
+
+
 		"""
-
-
-		
 		for pdf_path in pdf_list:
 			extract_and_process(input_dir, pdf_path)
+		
+		
 	
 			
 	else:

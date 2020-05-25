@@ -134,7 +134,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _laparams = LAParams(detect_vertical=True)
     #  _device = TextConverter(_rsrcmgr, _retstr, codec=_codec,laparams=_laparams)
     #_device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
-    _device = HTMLConverter(_rsrcmgr, _retstr, codec=_codec, laparams=_laparams)
+    _device = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
     _file = open(path, 'rb')
     
     '''
@@ -175,7 +175,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _rsrcmgr_default = PDFResourceManager()
     _retstr_default = StringIO()
     _laparams_default = LAParams() # detect_vertical=False
-    _device_default = HTMLConverter(_rsrcmgr_default, _retstr_default, codec=_codec, laparams=_laparams_default)
+    _device_default = HTMLConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams_default)
     _interpreter_default = PDFPageInterpreter(_rsrcmgr_default, _device_default)
 
     _text = ""
@@ -193,6 +193,8 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         t_start = time.process_time()
         # Analyze with detect_vertical
         _interpreter.process_page(page)
+
+        #"""
         t_elapsed = time.process_time() - t_start
         print("elapsed 1: ", t_elapsed)
         
@@ -241,12 +243,13 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
             _interpreter.process_page(page)
         #_interpreter_html.process_page(page)
 
-        '''
-        layout = _aggregator.get_result()
-        for element in layout:
-            if(isinstance(element, LTTextBoxHorizontal)):
-                print(element.get_text())
-        '''
+        
+        #layout = _aggregator.get_result()
+        #for element in layout:
+        #    if(isinstance(element, LTTextBoxHorizontal)):
+        #        print(element.get_text())
+        
+        #"""
 
         # Append new text
         _text += _retstr.getvalue()
