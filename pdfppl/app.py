@@ -1,6 +1,7 @@
 import sys
 from pdfppl import extractionPyPDF2 as e1
 from pdfppl import extractionTabula as e2
+from pdfppl import post_proc
 #from pdfppl import extraction_mupdf as e3
 from os.path import isfile, join, exists, abspath
 from os import listdir, makedirs
@@ -24,11 +25,6 @@ def path_leaf(path):
 
 
 def process(text, output_dir, file_name):
-	'''
-	processed_text = ( pre_proc.split_spans(text)           | p(pre_proc.delete_misc)
-					)
-	'''
-
 	bounds_list = pre_proc.get_page_bounds(text)
 
 	processed_text_html = ( pre_proc.split_spans(text) 		| p(pre_proc.delete_non_textual_elements)
@@ -39,11 +35,7 @@ def process(text, output_dir, file_name):
 
 	# Write processed HTML output 
 	pre_proc.create_text_file(output_dir + "/html_" + file_name + "_post.html", processed_text_html)
-	"""
-	processed_text = ( pre_proc.replace_br(processed_text_html)
-														| p(pre_proc.extract_text_md)
-					)
-	"""
+
 	processed_text = ( pre_proc.extract_text_md(processed_text_html)
 														| p(pre_proc.replace_br)
 														| p(pre_proc.remove_false_titles)
@@ -65,11 +57,17 @@ def process(text, output_dir, file_name):
 														| p(pre_proc.remove_useless_lines)
 														| p(pre_proc.remove_duplicated_whitespaces)
 														| p(pre_proc.remove_repeated_strings)
-					)
+														
+	)
+
 	
 	pre_proc.create_text_file(output_dir + "/" + file_name + "_post.md", processed_text)
 	
-	processed_json = pre_proc.convert_md_to_json(processed_text, file_name)		
+	processed_json = pre_proc.convert_md_to_json(processed_text, file_name)
+
+	# Feed chatbot
+	post_proc.feed_chatbot(processed_json)
+	
 	pre_proc.create_binary_file(output_dir + "/" + file_name + ".json", processed_json)
 
 
@@ -93,9 +91,8 @@ def get_listPDF(input_dir):
 	'''
 
 	path_archivos = [input_dir +'/' + f for f in listdir(input_dir) if isfile(join(input_dir, f)) ]
-	archivos = [f for f in listdir(input_dir) if isfile(join(input_dir, f)) ]
 
-	return path_archivos,archivos
+	return path_archivos
 
 def f(x):
 	time.sleep(randint(10,100)/100)
@@ -117,7 +114,7 @@ def run():
 	if(len(sys.argv) == 2):
 		input_dir = abspath(sys.argv[1]) # Directory where are stored pdfs to be processed
 
-		pdf_list, archivos = get_listPDF(input_dir)
+		pdf_list= get_listPDF(input_dir)
 
 		output_dir = input_dir + "/output"
 		if not exists(output_dir):
@@ -141,6 +138,7 @@ def run():
 		for pdf_path in pdf_list:
 			extract_and_process(input_dir, pdf_path)
 		"""
+	
 	
 		
 	
