@@ -1,6 +1,6 @@
 #!/bin/bash
-string1=".html_pre.md"
-string2=".html_post.md"
+string1="_pre.md"
+string2="_post.md"
 
 file1=""
 file2=""
