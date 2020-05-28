@@ -3,7 +3,8 @@ from pdfminer.converter import TextConverter, PDFPageAggregator, XMLConverter, H
 from pdfminer.layout import LAParams, LTTextBoxHorizontal
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfdevice import TagExtractor
-from io import StringIO, BytesIO
+from io import BytesIO as StringIO
+#from io import StringIO
 from pdfppl import pre_proc #, p2t_constants
 import re
 import time
@@ -164,11 +165,10 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     
 
 
-    #pagina = 31           
-    #_password = ""           # Cambiar en caso de PDF con pass
-    _password = b'' # Set empty password as default value
-    # maxpages = pagina       # Máximas páginas a recorrer
-    # añadir al for for numero,page in enumerate(PDFPage.get_pages(fp, pagenos, maxpages = maxpages password=password, check_extractable=True)
+
+
+    _password = '' # Set empty password as default value
+    #_password = b'' # Set empty password as default value
 
     _pagenos=set()           # Paginas a extraer separadas por comas
     #lista_paginas = []
@@ -178,7 +178,8 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     _device_default = HTMLConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams_default)
     _interpreter_default = PDFPageInterpreter(_rsrcmgr_default, _device_default)
 
-    _text = ""
+    _text = b""
+    #_text = ""
 
 
     for number,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
@@ -194,7 +195,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         # Analyze with detect_vertical
         _interpreter.process_page(page)
 
-        #"""
+        """
         t_elapsed = time.process_time() - t_start
         print("elapsed 1: ", t_elapsed)
         
@@ -249,7 +250,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         #    if(isinstance(element, LTTextBoxHorizontal)):
         #        print(element.get_text())
         
-        #"""
+        """
 
         # Append new text
         _text += _retstr.getvalue()
@@ -265,14 +266,20 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     print("finishing")
 
     #_text = _retstr_html.getvalue() + '\n\n'
-    _text += '\n\n'
+
+    _text += b'\n\n'
+    #_text += '\n\n'
+
     if (generate_output) :
-        pre_proc.create_text_file(output_dir + "/raw_" + file_name + ".html", _text) # Insertamos en el fichero el texto extraido
+        #pre_proc.create_text_file(output_dir + "/raw_" + file_name + ".html", _text) # Insertamos en el fichero el texto extraido
+        pre_proc.create_binary_file(output_dir + "/raw_" + file_name + ".html", _text) # Insertamos en el fichero el texto extraido
+        
         #pre_proc.create_text_file(output_dir + "/raw_default_" + file_name + ".html", _text_default) # Insertamos en el fichero el texto extraido
 
     _file.close()
     _device.close()
     _retstr.close()
-    return _text
+    return _text.decode("utf-8")
+    #return _text
     
 
