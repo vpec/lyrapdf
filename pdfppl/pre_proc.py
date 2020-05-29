@@ -687,7 +687,7 @@ def convert_md_to_json(text, name):
             level = len(heading_match.group(1))
             match = p3.sub(r'#', match)
             x = {
-                "h" + str(level) : heading_match.group(2),
+                "text" : heading_match.group(2),
                 "level" : level
             }
 
