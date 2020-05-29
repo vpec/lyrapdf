@@ -1,5 +1,7 @@
 import json
+import yaml
 import re
+import pdfppl.dialogflow_adapter as df
 
 
 def get_standard_text(content_list):
@@ -31,9 +33,25 @@ def text_under_title_recursive(content_list, title):
 
 def text_under_title(doc_json, title):
     root_content_list = doc_json["content"]
-    text_list = text_under_title_recursive(root_content_list, title)
-    return text_list
+    return text_under_title_recursive(root_content_list, title)
 
-def feed_chatbot(json_bytes):
+def create_intent_yaml(document, training_phrases):
+    intent_dict = {
+        "type" : "intent",
+        "name" : document,
+        "utterances" : training_phrases
+    }
+    with open('intent_dict.yml', 'w') as outfile:
+        yaml.dump(intent_dict, outfile, default_flow_style=False)
+    
+
+def feed_chatbot(json_bytes, project_id = "PROJECT_ID"):
     doc_json = json.loads(json_bytes)
-    print(text_under_title(doc_json, "Preguntas a responder"))
+    message_texts = ["Te recomiendo este documento " + doc_json["document"]]
+    text_list = text_under_title(doc_json, "Preguntas a responder")
+    if(text_list != None and text_list != []):
+        df.create_intent(project_id, doc_json["document"], text_list, message_texts)
+
+    # Create intent YAML
+    create_intent_yaml(doc_json["document"], text_list)
+
