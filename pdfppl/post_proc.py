@@ -62,8 +62,8 @@ def remove_numbers(text_list):
             text = whitespace_regex.sub(r' ', text)
             text = inital_space_regex.sub(r'', text)
             text = final_space_regex.sub(r'', text)
-            text = left_square_brackets_regex.sub(r'\(', text)
-            text = right_square_brackets_regex.sub(r'\)', text)
+            text = left_square_brackets_regex.sub(r'(', text)
+            text = right_square_brackets_regex.sub(r')', text)
             processed_text_list.append(text)
     return processed_text_list
 

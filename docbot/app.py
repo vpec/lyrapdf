@@ -21,8 +21,10 @@ def init_engine_es(dataset_file):
 
 def parse(engine_dir):
 	engine = SnipsNLUEngine.from_path(engine_dir)
-	parsing = engine.parse("test phrase")
-	print(json.dumps(parsing, indent=2))
+	while(True):
+		query = input("Enter query:\n")
+		parsing = engine.parse(query)
+		print(json.dumps(parsing, indent=2))
 
 
 
@@ -34,7 +36,7 @@ def run():
 			init_engine_es(dataset_file)
 		elif(sys.argv[1] == "-p"):
 			# Parse
-			engine_dir = abspath(sys.argv[2]) # dataset json file
+			engine_dir = abspath(sys.argv[2]) # engine directory
 			parse(engine_dir)
 
 		else:
