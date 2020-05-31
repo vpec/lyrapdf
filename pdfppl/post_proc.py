@@ -36,13 +36,13 @@ def text_under_title(doc_json, title):
     root_content_list = doc_json["content"]
     return text_under_title_recursive(root_content_list, title)
 
-def create_intent_yaml(document, training_phrases):
+def create_intent_snips(document, training_phrases):
     intent_dict = {
         "type" : "intent",
         "name" : document,
         "utterances" : training_phrases
     }
-    with open( document + '_intent.yml', 'w') as outfile:
+    with open( "chatbot/" + document + '_intent.yml', 'w') as outfile:
         yaml.dump(intent_dict, outfile, default_flow_style=False, allow_unicode=True)
     
 def remove_numbers(text_list):
@@ -71,9 +71,13 @@ def feed_chatbot(json_bytes, project_id = "PROJECT_ID"):
     if(text_list != None and text_list != []):
         df.create_intent(project_id, doc_json["document"], text_list, message_texts)
     """
-    # Remove numbers from text list
-    text_list = remove_numbers(text_list)
-    # Create intent YAML
-    create_intent_yaml(doc_json["document"], text_list)
-    snips.init_engine_es()
+    
+    if(text_list != None):
+        # Remove numbers from text list
+        text_list = remove_numbers(text_list)
+        if(text_list != []):
+            # Create intent YAML
+            create_intent_snips(doc_json["document"], text_list)
+
+    #snips.init_engine_es()
 

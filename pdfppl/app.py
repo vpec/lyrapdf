@@ -120,6 +120,10 @@ def run():
 		if not exists(output_dir):
 			makedirs(output_dir)
 
+		chatbot_dir = "chatbot"
+		if not exists(chatbot_dir):
+			makedirs(chatbot_dir)
+
 		function_args = []
 		for pdf in pdf_list:
 			function_args.append((input_dir, pdf))
