@@ -51,6 +51,8 @@ def remove_numbers(text_list):
     whitespace_regex = re.compile(r' +', re.UNICODE)
     inital_space_regex = re.compile(r'^ +', re.MULTILINE | re.UNICODE)
     final_space_regex = re.compile(r' +$', re.MULTILINE | re.UNICODE)
+    left_square_brackets_regex = re.compile(r'\[', re.UNICODE)
+    right_square_brackets_regex = re.compile(r'\]', re.UNICODE)
     processed_text_list = []
     for text in text_list:
         # Remove numbers
@@ -60,6 +62,8 @@ def remove_numbers(text_list):
             text = whitespace_regex.sub(r' ', text)
             text = inital_space_regex.sub(r'', text)
             text = final_space_regex.sub(r'', text)
+            text = left_square_brackets_regex.sub(r'\(', text)
+            text = right_square_brackets_regex.sub(r'\)', text)
             processed_text_list.append(text)
     return processed_text_list
 
