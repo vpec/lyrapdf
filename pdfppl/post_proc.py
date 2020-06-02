@@ -18,7 +18,8 @@ def get_standard_text(content_list):
 
 
 def text_under_title_recursive(content_list, title):
-    title_regex = re.compile(r'^Preguntas para responder$', re.MULTILINE | re.UNICODE)
+    #title_regex = re.compile(r'^%s$' % title, re.MULTILINE | re.UNICODE)
+    title_regex = re.compile(r'^' + f'{title}' + r'$', re.MULTILINE | re.UNICODE)
     for node in content_list:
         if(node["level"] != 7 and title_regex.search(node["text"])):
             print("Found in level", node["level"])
@@ -70,7 +71,7 @@ def remove_numbers(text_list):
 def feed_chatbot(json_bytes, project_id = "PROJECT_ID"):
     doc_json = json.loads(json_bytes)
     message_texts = ["Te recomiendo este documento " + doc_json["document"]]
-    text_list = text_under_title(doc_json, "Preguntas a responder")
+    text_list = text_under_title(doc_json, "Preguntas para responder")
     """
     if(text_list != None and text_list != []):
         df.create_intent(project_id, doc_json["document"], text_list, message_texts)

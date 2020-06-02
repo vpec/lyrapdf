@@ -24,8 +24,9 @@ def parse(engine_dir):
 	while(True):
 		query = input("Enter query:\n")
 		parsing = engine.parse(query)
-		print(json.dumps(parsing, indent=2))
-
+		print("Document:", parsing["intent"]["intentName"])
+		print("Confidence:", parsing["intent"]["probability"])
+		print()
 
 
 def run():
