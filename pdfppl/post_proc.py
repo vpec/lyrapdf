@@ -33,18 +33,11 @@ def text_under_title_recursive(content_list, title):
                     return result               
     return None
 
+
 def text_under_title(doc_json, title):
     root_content_list = doc_json["content"]
     return text_under_title_recursive(root_content_list, title)
 
-def create_intent_snips(document, training_phrases):
-    intent_dict = {
-        "type" : "intent",
-        "name" : document,
-        "utterances" : training_phrases
-    }
-    with open( "chatbot/" + document + '_intent.yml', 'w') as outfile:
-        yaml.dump(intent_dict, outfile, default_flow_style=False, allow_unicode=True)
     
 def remove_numbers(text_list):
     numbers_regex = re.compile(r'\d+\.', re.UNICODE)
@@ -68,21 +61,15 @@ def remove_numbers(text_list):
             processed_text_list.append(text)
     return processed_text_list
 
+
 def feed_chatbot(json_bytes, project_id = "PROJECT_ID"):
     doc_json = json.loads(json_bytes)
     message_texts = ["Te recomiendo este documento " + doc_json["document"]]
     text_list = text_under_title(doc_json, "Preguntas para responder")
-    """
-    if(text_list != None and text_list != []):
-        df.create_intent(project_id, doc_json["document"], text_list, message_texts)
-    """
     
     if(text_list != None):
         # Remove numbers from text list
         text_list = remove_numbers(text_list)
         if(text_list != []):
             # Create intent YAML
-            create_intent_snips(doc_json["document"], text_list)
-
-    #snips.init_engine_es()
-
+            snips.create_intent(doc_json["document"], text_list)

@@ -24,7 +24,7 @@ def process_without_detect_vertical(interpreter, retstr, page, return_dict):
     t_elapsed = time.process_time() - t_start
     print("elapsed 2: ", t_elapsed)
     
-    return_dict[0] = countRotated(retstr.getvalue()) + 1
+    return_dict[0] = countRotated(retstr.getvalue().decode("utf-8")) + 1
 
     
 def convert_pdf_to_txt_pypdf2(path, output_dir, file_name, generate_output = True):
@@ -49,7 +49,7 @@ def convert_pdf_to_txt_pypdf2(path, output_dir, file_name, generate_output = Tru
 
 
     
-def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
+def convert_pdf_to_txt(path, output_dir, file_name):
     """ 
         PDFMiner:                       https://pypi.org/project/pdfminer/ 
             - Documentación:            https://media.readthedocs.org/pdf/pdfminer-docs/latest/pdfminer-docs.pdf 
@@ -57,118 +57,20 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         :return:        Extrae el texto contenido en un PDF a través del uso de
                         PDFMiner y saca lo extraído al fichero salida_ExtraccionTexto
         """
-    """
-    _rsrcmgr = PDFResourceManager()
-    _retstr = StringIO()
-    _codec = 'utf-8'
-    _laparams = LAParams(detect_vertical=False)
-    #  _device = TextConverter(_rsrcmgr, _retstr, codec=_codec,laparams=_laparams)
-    #_device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
-    _file = open(path, 'rb')
-    
-    '''
-    _aggregator = PDFPageAggregator(_rsrcmgr, laparams=_laparams)
-    '''
-    _device = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
-    '''
-    _device_xml = XMLConverter(_rsrcmgr, _retstr, laparams=_laparams,
-                              imagewriter=None,
-                              stripcontrol=False)
-
-    
-    _device_tag = TagExtractor(_rsrcmgr, _retstr)
-    '''
-
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device)
-
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_tag)
-    _interpreter = PDFPageInterpreter(_rsrcmgr, _device)
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_xml)
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _aggregator)
-
-    
-
-
-    #pagina = 31           
-    _password = ""           # Cambiar en caso de PDF con pass
-    # maxpages = pagina       # Máximas páginas a recorrer
-    # añadir al for for numero,page in enumerate(PDFPage.get_pages(fp, pagenos, maxpages = maxpages password=password, check_extractable=True)
-
-    _pagenos=set()           # Paginas a extraer separadas por comas
-    #lista_paginas = []
-    _rsrcmgr_default = PDFResourceManager()
-    _retstr_default = StringIO()
-    _laparams_default = LAParams() # detect_vertical=False
-    _device_default = TextConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams_default)
-    _interpreter_default = PDFPageInterpreter(_rsrcmgr_default, _device_default)
-
-    _text = ""
-
-
-    for number,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
-        # Descomentar la parte de abajo si se desea una página en concreto
-        # añadir "numero al retorno del for"
-        # for numero,page in enumerate(PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, check_extractable=True)
-        print("Extracting page: ", number)
-
-        # Analyze with detect_vertical
-        _interpreter.process_page(page)
-
-
-
-    print("finishing")
-
-    _text = _retstr.getvalue()
-    if (generate_output) :
-        pre_proc.create_text_file(output_dir + "/raw_" + file_name + ".html", _text) # Insertamos en el fichero el texto extraido
-
-    _file.close()
-    _device.close()
-    _retstr.close()
-    return _text
-    """
-    
     
     _rsrcmgr = PDFResourceManager()
     _retstr = StringIO()
     _codec = 'utf-8'
     _laparams = LAParams(detect_vertical=True)
-    #  _device = TextConverter(_rsrcmgr, _retstr, codec=_codec,laparams=_laparams)
-    #_device = TextConverter(_rsrcmgr, _retstr, laparams=_laparams)
     _device = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
     _file = open(path, 'rb')
-    
-    '''
-    _aggregator = PDFPageAggregator(_rsrcmgr, laparams=_laparams)
-    '''
-    
-    '''
-    _device_xml = XMLConverter(_rsrcmgr, _retstr, laparams=_laparams,
-                              imagewriter=None,
-                              stripcontrol=False)
-    
-    _device_tag = TagExtractor(_rsrcmgr, _retstr)
-    '''
 
     _interpreter = PDFPageInterpreter(_rsrcmgr, _device)
-
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_tag)
-    """
-    _rsrcmgr_html = PDFResourceManager()
-    _retstr_html = StringIO()
-    _device_html = HTMLConverter(_rsrcmgr_html, _retstr_html, laparams=_laparams)
-    _interpreter_html = PDFPageInterpreter(_rsrcmgr_html, _device_html)
-    """
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _device_xml)
-    #_interpreter = PDFPageInterpreter(_rsrcmgr, _aggregator)
-
-    
 
 
 
 
     _password = '' # Set empty password as default value
-    #_password = b'' # Set empty password as default value
 
     _pagenos=set()           # Paginas a extraer separadas por comas
     #lista_paginas = []
@@ -180,6 +82,9 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
 
     _text = b""
     #_text = ""
+
+
+    check_rotated = True
 
 
     for number,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
@@ -195,62 +100,54 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
         # Analyze with detect_vertical
         _interpreter.process_page(page)
 
-        """
-        t_elapsed = time.process_time() - t_start
-        print("elapsed 1: ", t_elapsed)
-        
-        print(countRotated(_retstr.getvalue()))
-        num_occ = countRotated(_retstr.getvalue()) + 1
+        if(check_rotated):
+            t_elapsed = time.process_time() - t_start
+            print("elapsed 1: ", t_elapsed)
+            print("countRotated", countRotated(_retstr.getvalue().decode("utf-8")))
+            num_occ = countRotated(_retstr.getvalue().decode("utf-8")) + 1
 
-        # Set timeout based on elapsed time using detect_vertical processing
-        _timeout = 5 + t_elapsed * 10
-        max_timeout = 60 # seconds
-        _timeout = min(max_timeout, _timeout)
-        #_timeout = 100000
-        print("timeout: ", _timeout)
+            # Set timeout based on elapsed time using detect_vertical processing
+            _timeout = 5 + t_elapsed * 10
+            max_timeout = 60 # seconds
+            _timeout = min(max_timeout, _timeout)
+            #_timeout = 100000
+            print("timeout: ", _timeout)
 
-        # Create shared variable
-        manager = Manager()
-        return_dict = manager.dict()
+            # Create shared variable
+            manager = Manager()
+            return_dict = manager.dict()
 
-        #action_process = Process(target=_interpreter_default.process_page, args=(page,))
-        action_process = Process(target=process_without_detect_vertical, args=(_interpreter_default, _retstr_default, page, return_dict,))
-        action_process.start()
-        action_process.join(timeout=_timeout)
-        
-        # If thread is still active
-        if action_process.is_alive():
-            # Terminate
-            action_process.terminate()
-            action_process.join()
-            print("Ran out of time")
-            rotating = True
-        else:
-            # Get number of occurences
-            num_occ_default = return_dict[0]
-            print(num_occ_default)
-            # Check if page needs to be rotated
-            if(num_occ_default / num_occ > 5 and num_occ_default > 100):
+            #action_process = Process(target=_interpreter_default.process_page, args=(page,))
+            action_process = Process(target=process_without_detect_vertical, args=(_interpreter_default, _retstr_default, page, return_dict,))
+            action_process.start()
+            action_process.join(timeout=_timeout)
+            
+            # If thread is still active
+            if action_process.is_alive():
+                # Terminate
+                action_process.terminate()
+                action_process.join()
+                print("Ran out of time")
                 rotating = True
+            else:
+                # Get number of occurences
+                num_occ_default = return_dict[0]
+                print("num_occ_default", num_occ_default)
+                # Check if page needs to be rotated
+                if(num_occ_default / num_occ > 5 and num_occ_default > 100):
+                    rotating = True
 
-        if(rotating):
-            print("Rotating")
-            # Clean buffer
-            _retstr.truncate(0)
-            _retstr.seek(0)
-            # Rotate page
-            page.rotate = (page.rotate+90) % 360
-            # Analyze again with detect_vertical
-            _interpreter.process_page(page)
-        #_interpreter_html.process_page(page)
-
+            if(rotating):
+                print("Rotating")
+                # Clean buffer
+                _retstr.truncate(0)
+                _retstr.seek(0)
+                # Rotate page
+                page.rotate = (page.rotate+90) % 360
+                # Analyze again with detect_vertical
+                _interpreter.process_page(page)
+            
         
-        #layout = _aggregator.get_result()
-        #for element in layout:
-        #    if(isinstance(element, LTTextBoxHorizontal)):
-        #        print(element.get_text())
-        
-        """
 
         # Append new text
         _text += _retstr.getvalue()
@@ -268,13 +165,7 @@ def convert_pdf_to_txt(path, output_dir, file_name, generate_output = True):
     #_text = _retstr_html.getvalue() + '\n\n'
 
     _text += b'\n\n'
-    #_text += '\n\n'
 
-    if (generate_output) :
-        #pre_proc.create_text_file(output_dir + "/raw_" + file_name + ".html", _text) # Insertamos en el fichero el texto extraido
-        pre_proc.create_binary_file(output_dir + "/raw_" + file_name + ".html", _text) # Insertamos en el fichero el texto extraido
-        
-        #pre_proc.create_text_file(output_dir + "/raw_default_" + file_name + ".html", _text_default) # Insertamos en el fichero el texto extraido
 
     _file.close()
     _device.close()

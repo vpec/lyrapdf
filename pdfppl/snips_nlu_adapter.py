@@ -1,16 +1,11 @@
 import io
 import yaml
 
-from snips_nlu import SnipsNLUEngine
-from snips_nlu.default_configs import CONFIG_ES
-
-seed = 42
-
-def init_engine_es():
-    engine = SnipsNLUEngine(config=CONFIG_ES, random_state=seed)
-    with io.open("GPC_541_Terapia_intravenosa_AETSA_compl.pdf_intent.yml") as f:
-        dataset = yaml.load(f)
-
-    engine.fit(dataset)
-
-    engine.parse("Please give me some lights in the entrance !")
+def create_intent(document, training_phrases):
+    intent_dict = {
+        "type" : "intent",
+        "name" : document,
+        "utterances" : training_phrases
+    }
+    with open( "chatbot/" + document + '_intent.yml', 'w') as outfile:
+        yaml.dump(intent_dict, outfile, default_flow_style=False, allow_unicode=True)

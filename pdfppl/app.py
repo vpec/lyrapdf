@@ -24,19 +24,18 @@ def path_leaf(path):
 	return tail or ntpath.basename(head)
 
 
-def process(text, output_dir, file_name):
-	bounds_list = pre_proc.get_page_bounds(text)
+def process_html(raw_html_text):
+	bounds_list = pre_proc.get_page_bounds(raw_html_text)
 
-	processed_text_html = ( pre_proc.split_spans(text) 		| p(pre_proc.delete_non_textual_elements)
-														| p(pre_proc.delete_headers, bounds_list)
-														| p(pre_proc.delete_vertical_text)
-														| p(pre_proc.sort_html)
-					)
+	processed_text_html = ( pre_proc.split_spans(raw_html_text) 	| p(pre_proc.delete_non_textual_elements)
+																	| p(pre_proc.delete_headers, bounds_list)
+																	| p(pre_proc.delete_vertical_text)
+																	| p(pre_proc.sort_html)
+		)
+	return processed_text_html
 
-	# Write processed HTML output 
-	pre_proc.create_text_file(output_dir + "/html_" + file_name + "_post.html", processed_text_html)
-
-	processed_text = ( pre_proc.extract_text_md(processed_text_html)
+def process_md(processed_text_html):
+	processed_text_md = ( pre_proc.extract_text_md(processed_text_html)
 														| p(pre_proc.replace_br)
 														| p(pre_proc.remove_false_titles)
 														| p(pre_proc.remove_blank_lines)
@@ -58,26 +57,41 @@ def process(text, output_dir, file_name):
 														| p(pre_proc.remove_duplicated_whitespaces)
 														| p(pre_proc.remove_repeated_strings)
 														
-	)
+		)
+	return processed_text_md
 
+def process(text, output_dir, file_name):
+	# Process HTML
+	processed_text_html = process_html(text)
+	# Write processed HTML output 
+	pre_proc.create_text_file(output_dir + "/html_" + file_name + "_post.html", processed_text_html)
+
+	# Process MD
+	processed_text_md = process_md(processed_text_html)
+	# Write processed MD output 
+	pre_proc.create_text_file(output_dir + "/" + file_name + "_post.md", processed_text_md)
 	
-	pre_proc.create_text_file(output_dir + "/" + file_name + "_post.md", processed_text)
-	
-	processed_json = pre_proc.convert_md_to_json(processed_text, file_name)
+	# Process JSON
+	processed_json = pre_proc.convert_md_to_json(processed_text_md, file_name)
+	# Write processed JSON output 
+	pre_proc.create_binary_file(output_dir + "/" + file_name + "_post.json", processed_json)
 
 	# Feed chatbot
 	post_proc.feed_chatbot(processed_json)
-	
-	pre_proc.create_binary_file(output_dir + "/" + file_name + ".json", processed_json)
 
+	
 
 def extract_and_process(input_dir, pdf_path):
 	print('Extracting text from: ', pdf_path)
-	try:	
-		texto_extraido = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+	output_dir = input_dir + "/output"
+	try:
+		# Extract PDF to HTML format
+		extracted_text = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+		# Write raw HTML
+		pre_proc.create_text_file(output_dir + "/raw_" + path_leaf(pdf_path) + "_post.html", extracted_text)
 		
 		print("Extraction finished: "+ pdf_path + ", starting processing")
-		process(texto_extraido, input_dir + "/output", path_leaf(pdf_path))
+		process(extracted_text, output_dir, path_leaf(pdf_path))
 
 	except PDFSyntaxError:
 		print("PDFSyntaxError: Is this really a PDF? ", pdf_path)
@@ -94,10 +108,6 @@ def get_listPDF(input_dir):
 
 	return path_archivos
 
-def f(x):
-	time.sleep(randint(10,100)/100)
-	
-	print(x)
 
 def run_test():
 	input_dir = "/home/victor/pdfppl/pdfppl/resources/raw2"
@@ -133,7 +143,7 @@ def run():
 		# Multithreading
 		print("Number of CPU:", cpu_count())
 		
-		
+		"""
 		p = Pool(cpu_count())
 		with p:
   			p.starmap(extract_and_process, function_args)
@@ -141,11 +151,7 @@ def run():
 		"""
 		for pdf_path in pdf_list:
 			extract_and_process(input_dir, pdf_path)
-		"""
-	
-	
 		
 	
-			
 	else:
 		print("Invalid number of arguments")
