@@ -120,6 +120,15 @@ def run_test():
 			_file.close()
 			process(text, output_dir, path_leaf(pdf_path))
 
+def run_chatbot():
+	if(len(sys.argv) == 2):
+		input_dir = abspath(sys.argv[1]) # Directory where are stored JSON to be processed
+		json_list = get_listPDF(input_dir)
+		for json_doc_path in json_list:
+			json_doc = open(json_doc_path, 'rb').read()
+			# Feed chatbot
+			post_proc.feed_chatbot(json_doc)
+
 def run():
 	if(len(sys.argv) == 2):
 		input_dir = abspath(sys.argv[1]) # Directory where are stored pdfs to be processed

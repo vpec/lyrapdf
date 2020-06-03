@@ -21,11 +21,14 @@ def init_engine_es(dataset_file):
 
 def parse(engine_dir):
 	engine = SnipsNLUEngine.from_path(engine_dir)
+	data_dir = "chatbot/"
 	while(True):
 		query = input("Enter query:\n")
 		parsing = engine.parse(query)
 		print("Document:", parsing["intent"]["intentName"])
+		response = open(data_dir + parsing["intent"]["intentName"] + "_intent.txt", 'r').read()
 		print("Confidence:", parsing["intent"]["probability"])
+		print("RESPONSE:\n", response)
 		print()
 
 
