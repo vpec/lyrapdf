@@ -18,8 +18,7 @@ def get_standard_text(content_list):
 
 
 def text_under_title_recursive(content_list, title):
-    #title_regex = re.compile(r'^%s$' % title, re.MULTILINE | re.UNICODE)
-    title_regex = re.compile(r'^' + f'{title}' + r'$', re.MULTILINE | re.UNICODE)
+    title_regex = re.compile(r'^' + f'{re.escape(title)}' + r'$', re.MULTILINE | re.UNICODE)
     for node in content_list:
         if(node["level"] != 7 and title_regex.search(node["text"])):
             print("Found in level", node["level"])
@@ -47,6 +46,7 @@ def remove_numbers(text_list):
     final_space_regex = re.compile(r' +$', re.MULTILINE | re.UNICODE)
     left_square_brackets_regex = re.compile(r'\[', re.UNICODE)
     right_square_brackets_regex = re.compile(r'\]', re.UNICODE)
+    right_square_brackets_regex = re.compile(r'\]', re.UNICODE)
     processed_text_list = []
     for text in text_list:
         # Remove numbers
@@ -62,6 +62,32 @@ def remove_numbers(text_list):
     return processed_text_list
 
 
+def get_next_paragraph_recursive(content_list, text, next_paragraph_text = "", found = False, ocurrences = 0):
+    text_regex = re.compile(f'{re.escape(text)}', re.UNICODE)
+    for node in content_list:
+        if(found and node["level"] == 7):
+            ocurrences += 1
+            if(len(next_paragraph_text) < len(node["text"])):
+                next_paragraph_text = node["text"]
+            found = False
+        if(node["level"] == 7 and text_regex.search(node["text"])):
+            found = True
+        # Recursive call
+        if("content" in node.keys()):
+            next_paragraph_text, found, ocurrences = get_next_paragraph_recursive(node["content"], text, next_paragraph_text, found, ocurrences)
+    return next_paragraph_text, found, ocurrences
+
+
+
+def get_next_paragraph(doc_json, text):
+    root_content_list = doc_json["content"]
+    next_paragraph_text, found, ocurrences = get_next_paragraph_recursive(root_content_list, text)
+    if(next_paragraph_text != "" and ocurrences > 1):
+        return next_paragraph_text
+    else:
+        return None
+
+
 def feed_chatbot(json_bytes, project_id = "PROJECT_ID"):
     doc_json = json.loads(json_bytes)
     message_texts = ["Te recomiendo este documento " + doc_json["document"]]
@@ -71,5 +97,15 @@ def feed_chatbot(json_bytes, project_id = "PROJECT_ID"):
         # Remove numbers from text list
         text_list = remove_numbers(text_list)
         if(text_list != []):
+            i = 1
+            for text in text_list:
+                next_paragraph_text = get_next_paragraph(doc_json, text)
+                if next_paragraph_text:
+                    snips.create_intent(doc_json["document"] + "_" + str(i), text, next_paragraph_text)
+                    i += 1
+
+
+            """
             # Create intent YAML
-            snips.create_intent(doc_json["document"], text_list)
+            snips.create_intent_from_list(doc_json["document"], text_list)
+            """

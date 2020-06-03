@@ -64,20 +64,20 @@ def process(text, output_dir, file_name):
 	# Process HTML
 	processed_text_html = process_html(text)
 	# Write processed HTML output 
-	pre_proc.create_text_file(output_dir + "/html_" + file_name + "_post.html", processed_text_html)
+	pre_proc.create_text_file(output_dir + "/html_" + file_name + "_pre.html", processed_text_html)
 
 	# Process MD
 	processed_text_md = process_md(processed_text_html)
 	# Write processed MD output 
-	pre_proc.create_text_file(output_dir + "/" + file_name + "_post.md", processed_text_md)
+	pre_proc.create_text_file(output_dir + "/" + file_name + "_pre.md", processed_text_md)
 	
 	# Process JSON
 	processed_json = pre_proc.convert_md_to_json(processed_text_md, file_name)
 	# Write processed JSON output 
-	pre_proc.create_binary_file(output_dir + "/" + file_name + "_post.json", processed_json)
+	pre_proc.create_binary_file(output_dir + "/" + file_name + "_pre.json", processed_json)
 
 	# Feed chatbot
-	post_proc.feed_chatbot(processed_json)
+	#post_proc.feed_chatbot(processed_json)
 
 	
 
@@ -152,7 +152,7 @@ def run():
 		# Multithreading
 		print("Number of CPU:", cpu_count())
 		
-		"""
+		
 		p = Pool(cpu_count())
 		with p:
   			p.starmap(extract_and_process, function_args)
@@ -160,6 +160,7 @@ def run():
 		"""
 		for pdf_path in pdf_list:
 			extract_and_process(input_dir, pdf_path)
+		"""
 		
 	
 	else:

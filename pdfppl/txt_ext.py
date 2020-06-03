@@ -12,9 +12,6 @@ from multiprocessing import Process, Manager
 
 import PyPDF2
 
-
-
-
 def countRotated(text):
     return len(re.findall(r'\w\n', text))
 
@@ -68,12 +65,9 @@ def convert_pdf_to_txt(path, output_dir, file_name):
     _interpreter = PDFPageInterpreter(_rsrcmgr, _device)
 
 
-
-
     _password = '' # Set empty password as default value
 
-    _pagenos=set()           # Paginas a extraer separadas por comas
-    #lista_paginas = []
+    _pagenos=set()  # empty page set
     _rsrcmgr_default = PDFResourceManager()
     _retstr_default = StringIO()
     _laparams_default = LAParams() # detect_vertical=False
@@ -81,16 +75,12 @@ def convert_pdf_to_txt(path, output_dir, file_name):
     _interpreter_default = PDFPageInterpreter(_rsrcmgr_default, _device_default)
 
     _text = b""
-    #_text = ""
 
-
-    check_rotated = True
+    check_rotated = False
 
 
     for number,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
-        # Descomentar la parte de abajo si se desea una página en concreto
-        # añadir "numero al retorno del for"
-        # for numero,page in enumerate(PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, check_extractable=True)
+
         print("Extracting page: ", number)
         #interpreter.process_page(page)
 
@@ -117,7 +107,6 @@ def convert_pdf_to_txt(path, output_dir, file_name):
             manager = Manager()
             return_dict = manager.dict()
 
-            #action_process = Process(target=_interpreter_default.process_page, args=(page,))
             action_process = Process(target=process_without_detect_vertical, args=(_interpreter_default, _retstr_default, page, return_dict,))
             action_process.start()
             action_process.join(timeout=_timeout)
@@ -147,8 +136,7 @@ def convert_pdf_to_txt(path, output_dir, file_name):
                 # Analyze again with detect_vertical
                 _interpreter.process_page(page)
             
-        
-
+    
         # Append new text
         _text += _retstr.getvalue()
         
@@ -162,7 +150,6 @@ def convert_pdf_to_txt(path, output_dir, file_name):
 
     print("finishing")
 
-    #_text = _retstr_html.getvalue() + '\n\n'
 
     _text += b'\n\n'
 
@@ -171,6 +158,5 @@ def convert_pdf_to_txt(path, output_dir, file_name):
     _device.close()
     _retstr.close()
     return _text.decode("utf-8")
-    #return _text
     
 
