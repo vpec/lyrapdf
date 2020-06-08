@@ -53,6 +53,7 @@ def process_md(processed_text_html):
 														| p(pre_proc.join_by_colon)
 														| p(pre_proc.remove_duplicated_dashes)
 														| p(pre_proc.fix_marks)
+														| p(pre_proc.join_title_questions)
 														| p(pre_proc.remove_useless_lines)
 														| p(pre_proc.remove_duplicated_whitespaces)
 														| p(pre_proc.remove_repeated_strings)
@@ -69,7 +70,7 @@ def process(text, output_dir, file_name):
 	# Process MD
 	processed_text_md = process_md(processed_text_html)
 	# Write processed MD output 
-	pre_proc.create_text_file(output_dir + "/" + file_name + "_pre.md", processed_text_md)
+	pre_proc.create_text_file(output_dir + "/" + file_name + "_post.md", processed_text_md)
 	
 	# Process JSON
 	processed_json = pre_proc.convert_md_to_json(processed_text_md, file_name)
@@ -77,7 +78,11 @@ def process(text, output_dir, file_name):
 	pre_proc.create_binary_file(output_dir + "/" + file_name + "_pre.json", processed_json)
 
 	# Feed chatbot
-	#post_proc.feed_chatbot(processed_json)
+	dataset_dir  = "chatbot"
+	# Create general intent folder
+	if not exists(dataset_dir + "/general"):
+		makedirs(dataset_dir + "/general")
+	post_proc.feed_chatbot(processed_json, dataset_dir)
 
 	
 

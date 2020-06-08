@@ -89,11 +89,55 @@ def get_next_paragraph(doc_json, text):
 	else:
 		return None
 
+def get_questions_recursive(content_list):
+	questions_list = []
+	question_regex = re.compile(r'^.*?¿.*?\?.*$', re.MULTILINE | re.UNICODE)
+	for node in content_list:
+		if(node["level"] != 7 and question_regex.search(node["text"])):
+			questions_list.append(node["text"])
+		# Recursive call
+		if("content" in node.keys()):
+			questions_list += get_questions_recursive(node["content"])
+	return questions_list
+
+def get_questions(doc_json):
+	root_content_list = doc_json["content"]
+	questions_list = get_questions_recursive(root_content_list)
+	return questions_list
+
 
 def feed_chatbot(json_bytes, dataset_dir, project_id = "PROJECT_ID"):
 	doc_json = json.loads(json_bytes)
-	message_texts = ["Te recomiendo este documento " + doc_json["document"]]
-	text_list = text_under_title(doc_json, "Preguntas para responder")
+	#message_texts = ["Te recomiendo este documento " + doc_json["document"]]
+	#text_list = text_under_title(doc_json, "Preguntas para responder")
+	questions_list = get_questions(doc_json)
+	if(questions_list != []):
+		for question in questions_list:
+			print(question)
+			text_list = text_under_title(doc_json, question)
+			if(text_list != None):
+				# Remove numbers from text list
+				if(text_list != []):
+					[question] = remove_numbers([question])
+					# Create intent folder
+					if not exists(dataset_dir + "/" + doc_json["document"]):
+						makedirs(dataset_dir + "/" + doc_json["document"])
+					i = 1
+					response_text = ""
+					for element in text_list:
+						response_text += element + '\n'
+					for text in text_list:
+						next_paragraph_text = get_next_paragraph(doc_json, text)
+						if next_paragraph_text:
+							# Create phrase intent
+							snips.create_intent(dataset_dir, doc_json["document"], doc_json["document"] + "_" + str(i), question, response_text)
+							i += 1
+		# Create document intent YAML
+		questions_list = remove_numbers(questions_list)
+		snips.create_intent_from_list(dataset_dir, doc_json["document"], questions_list)
+	return 0
+
+
 	if(text_list != None):
 		# Remove numbers from text list
 		text_list = remove_numbers(text_list)
