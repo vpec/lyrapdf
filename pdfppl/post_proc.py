@@ -111,47 +111,26 @@ def feed_chatbot(json_bytes, dataset_dir, project_id = "PROJECT_ID"):
 	#message_texts = ["Te recomiendo este documento " + doc_json["document"]]
 	#text_list = text_under_title(doc_json, "Preguntas para responder")
 	questions_list = get_questions(doc_json)
+	print(questions_list)
 	if(questions_list != []):
+		# Create intent folder
+		if not exists(dataset_dir + "/" + doc_json["document"]):
+			makedirs(dataset_dir + "/" + doc_json["document"])
+		i = 1
 		for question in questions_list:
-			print(question)
+			#print(question)
 			text_list = text_under_title(doc_json, question)
 			if(text_list != None):
-				# Remove numbers from text list
 				if(text_list != []):
+					# Remove numbers from question
 					[question] = remove_numbers([question])
-					# Create intent folder
-					if not exists(dataset_dir + "/" + doc_json["document"]):
-						makedirs(dataset_dir + "/" + doc_json["document"])
-					i = 1
 					response_text = ""
 					for element in text_list:
 						response_text += element + '\n'
-					for text in text_list:
-						next_paragraph_text = get_next_paragraph(doc_json, text)
-						if next_paragraph_text:
-							# Create phrase intent
-							snips.create_intent(dataset_dir, doc_json["document"], doc_json["document"] + "_" + str(i), question, response_text)
-							i += 1
+					# Create phrase intent
+					snips.create_intent(dataset_dir, doc_json["document"], doc_json["document"] + "_" + str(i), question, response_text)
+					i += 1
 		# Create document intent YAML
 		questions_list = remove_numbers(questions_list)
 		snips.create_intent_from_list(dataset_dir, doc_json["document"], questions_list)
-	return 0
 
-
-	if(text_list != None):
-		# Remove numbers from text list
-		text_list = remove_numbers(text_list)
-		if(text_list != []):
-			# Create intent folder
-			if not exists(dataset_dir + "/" + doc_json["document"]):
-				makedirs(dataset_dir + "/" + doc_json["document"])
-			i = 1
-			for text in text_list:
-				next_paragraph_text = get_next_paragraph(doc_json, text)
-				if next_paragraph_text:
-					# Create phrase intent
-					snips.create_intent(dataset_dir, doc_json["document"], doc_json["document"] + "_" + str(i), text, next_paragraph_text)
-					i += 1
-			# Create document intent YAML
-			snips.create_intent_from_list(dataset_dir, doc_json["document"], text_list)
-			
