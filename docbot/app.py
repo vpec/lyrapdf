@@ -1,6 +1,6 @@
 import sys
 from os.path import abspath
-from docbot.train import init_engine_es
+from docbot.train import init_engine
 from docbot.parse import question_and_answer
 
 def run():
