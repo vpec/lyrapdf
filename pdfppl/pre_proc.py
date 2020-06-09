@@ -93,10 +93,8 @@ def delete_misc(text):
 	'''
 		:return Keep text and remove miscellaneous elements
 	'''
-	
 	p1 = re.compile(r'<span style="font-family:.*</span>', re.MULTILINE | re.UNICODE | re.DOTALL)
 	match_list = re.findall(p1, text)
-	#text2 = p1.sub(r'<ol>\n\1\2',text)
 	processed_text = ""
 	for match in match_list:
 		processed_text += match + '\n'
@@ -118,20 +116,26 @@ def delete_non_textual_elements(text):
 	return processed_text2
 
 def get_page_bounds(text):
-	p1 = re.compile(r'<span style=\"position:absolute; border:.*?top:(.*?)px.*?height:(.*?)px.*?></span>\n<div style=\"position:absolute;.*?Page.*?</a></div>', re.UNICODE)
-	match_list = re.findall(p1, text)
+	positions_regex = re.compile(r'<span style=\"position:absolute; border:.*?top:(.*?)px.*?height:(.*?)px.*?></span>\n<div style=\"position:absolute;.*?Page.*?</a></div>', re.UNICODE)
+	# Find all matchings
+	match_list = re.findall(positions_regex, text)
 	# Bound coefficients
-	kl = 0.05
-	ku = 0.08
+	kl = 0.05 # k lower
+	ku = 0.08 # k upper
 	bounds_list = []
+	# Iterate through match list
 	for match in match_list:
+		# Get top parameter
 		top = int(match[0])
+		# Get height parameter
 		height = int(match[1])
+		# Calculate lower bound
 		lower_bound = top + kl * height
+		# Calculate upper bound
 		upper_bound = (top + height) - ku * height
+		# Append bounds to list
 		bounds_list.append((lower_bound, upper_bound))
 	return bounds_list
-
 
 def is_header(bounds_list, position, font_size, i):
 	if(font_size >= 18):
@@ -164,11 +168,10 @@ def is_header(bounds_list, position, font_size, i):
 		return it_is_header, i
 
 def delete_headers(text, bounds_list):
-	p1 = re.compile(r'(<div style=\"position:absolute; border:.*?top:(.*?)px.*?<span style=\"font-family:.*?font-size:(.*?)px.*?</div>)', re.UNICODE | re.DOTALL)
+	headers_regex = re.compile(r'(<div style=\"position:absolute; border:.*?top:(.*?)px.*?<span style=\"font-family:.*?font-size:(.*?)px.*?</div>)', re.UNICODE | re.DOTALL)
 	# Store processed text
 	processed_text = ""
-	removed_text = ""
-	match_list = re.findall(p1, text)
+	match_list = re.findall(headers_regex, text)
 	i = 0 # variable for iterating bounds list
 	for match in match_list:
 		#print(match)
@@ -177,46 +180,34 @@ def delete_headers(text, bounds_list):
 		font_size = int(match[2])
 		# Check if piece of text is header
 		it_is_header, i = is_header(bounds_list, position, font_size, i)
-		if(it_is_header):
-			# If it's header
-			removed_text += matched
-		else:
+		if(not it_is_header):
 			# If it isn't header
 			processed_text += matched
-	### REMOVE LATER, RETURN ONLY PROCESSED_TEXT
 	return processed_text
 
 
 def delete_vertical_text(text):
-	
-	p1 = re.compile(r'((<div style=\"position:absolute; border:.*?)\n(<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(.|\n)*?</div>)', re.UNICODE)
-	#p1 = re.compile(r'(?!((?:<div style=\"position:absolute; border:.*?)\n(?:<span style=\"font-family:.*?font-size:(?P<size>.+?)px\">.{1,5}</span>\n)((?:<span style=\"font-family:.*?font-size:(?P=size)px\">.{1,5}</span>\n){4,})(?:.|\n)*?</div>))(?:(?:<div style=\"position:absolute; border:.*?)\n(?:<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(?:.|\n)*?</div>)', re.UNICODE)
-	"""
-	((<div style=\"position:absolute; border:.*?)\n((?:<span style=\"font-family:.*?font-size:(.+?)px\">.{1,5}</span>\n){5,})(.|\n)*?</div>)
-	detect same size text
-	((?:<div style=\"position:absolute; border:.*?)\n(?:<span style=\"font-family:.*?font-size:(?P<size>.+?)px\">.{1,5}</span>\n)((?:<span style=\"font-family:.*?font-size:(?P=size)px\">.{1,5}</span>\n){4,})(?:.|\n)*?</div>)
-	Check this out
-	(?!((?:<div style=\"position:absolute; border:.*?)\n(?:<span style=\"font-family:.*?font-size:(?P<size>.+?)px\">.{1,5}</span>\n)((?:<span style=\"font-family:.*?font-size:(?P=size)px\">.{1,5}</span>\n){4,})(?:.|\n)*?</div>))((<div style=\"position:absolute; border:.*?)\n(<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(.|\n)*?</div>)
-	Shorter
-	((?:<div style=\"position:absolute; border:.*?)\n(?:<span style=\"font-family:.*?font-size:(?P<size>.+?)px\">.{1,5}</span>\n)(?!((?:<span style=\"font-family:.*?font-size:(?P=size)px\">.{1,5}</span>\n){4,}))(?:.|\n)*?</div>)
-	"""
-
-	processed_text = p1.sub("", text)
+	vertical_text_regex = re.compile(r'((<div style=\"position:absolute; border:.*?)\n(<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(.|\n)*?</div>)', re.UNICODE)
+	processed_text = vertical_text_regex.sub("", text)
 	return processed_text
 
 
 def kmeans(font_size_list):
+	# Check if font_size_list isn't empty
 	if(font_size_list == []):
 		return {}
+	# Define number of clusters (k)
 	k = min(6, len(font_size_list))
+	# Get intervals (execute ckmeans)
 	intervals = list(reversed(ckmeans(font_size_list, k)))
+	# Initialize headings_dict as empty dictionary
 	headings_dict = {}
 	i = 1
+	# Fill headings dictionary
 	for sublist in intervals:
 		for font_size in sublist:
 			headings_dict[font_size] = i
 		i += 1
-	print(headings_dict)
 	return headings_dict
 
 
@@ -312,8 +303,8 @@ def replace_br(text):
 """
 
 def remove_small_text(text):
-	p1 = re.compile(r'(<div style=\"position:absolute;(?:.|\n)*?<span style=\"font-family: .*?; font-size:(.*?)px\">(?:.|\n)*?</div>)', re.UNICODE)
-	match_list = re.findall(p1, text)
+	small_text_regex = re.compile(r'(<div style=\"position:absolute;(?:.|\n)*?<span style=\"font-family: .*?; font-size:(.*?)px\">(?:.|\n)*?</div>)', re.UNICODE)
+	match_list = re.findall(small_text_regex, text)
 	processed_text = ""
 	for match in match_list:
 		font_size = int(match[1])
@@ -322,10 +313,8 @@ def remove_small_text(text):
 	return processed_text
 
 def sort_html(text):
-	p1 = re.compile(r'(<div style=\"position:absolute; border:(?:.|\n)*?left:(.*?)px; top:(.*?)px(?:.|\n)*?height:(.*?)px(?:.|\n)*?<span style=\"font-family:(?:.|\n)*?font-size:(.*?)px(?:.|\n)*?</div>)', re.UNICODE)
-	
-	match_list = re.findall(p1, text)
-
+	div_container_regex = re.compile(r'(<div style=\"position:absolute; border:(?:.|\n)*?left:(.*?)px; top:(.*?)px(?:.|\n)*?height:(.*?)px(?:.|\n)*?<span style=\"font-family:(?:.|\n)*?font-size:(.*?)px(?:.|\n)*?</div>)', re.UNICODE)
+	match_list = re.findall(div_container_regex, text)
 	n = len(match_list)
 	i = 0
 	top = 0
@@ -345,8 +334,6 @@ def sort_html(text):
 			del match_list[bad_i]
 			match_list.insert(i, element)
 			prev_top = top
-	
-	
 	
 	# Check sorting
 	top = 0
@@ -666,7 +653,6 @@ def join_title_questions(text):
 				question_text += title_regex_match.group(2)
 			elif(not question_regex_match and question_text == ""):
 				processed_text += line + '\n'
-
 
 		else:
 			# Standard line
