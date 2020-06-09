@@ -351,3 +351,5 @@ MigrationBackup/
 
 # Ignore resources folder
 resources
+# Ignore chatbot folder
+chatbot
