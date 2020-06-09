@@ -140,30 +140,30 @@ def run_chatbot():
 
 def run():
 	if(len(sys.argv) == 2):
-		input_dir = abspath(sys.argv[1]) # Directory where are stored pdfs to be processed
-
-		pdf_list= get_listPDF(input_dir)
-
+		# Get directory where are stored pdfs to be processed
+		input_dir = abspath(sys.argv[1])
+		# Get list of pdf from input directory
+		pdf_list = get_listPDF(input_dir)
+		# Define ouptut directory
 		output_dir = input_dir + "/output"
+		# Create output directory if it doesn't exist
 		if not exists(output_dir):
 			makedirs(output_dir)
-
+		# Define chatbot directory
 		chatbot_dir = "chatbot"
+		# Create chatbot directory if it doesn't exist
 		if not exists(chatbot_dir):
 			makedirs(chatbot_dir)
-
+		# Create function arguments for multithreading
 		function_args = []
 		for pdf in pdf_list:
 			function_args.append((input_dir, pdf))
-
-		#print(function_args)
-		
 		# Multithreading
 		print("Number of CPU:", cpu_count())
-		
-		
+		# Initialize multithreading pool
 		p = Pool(cpu_count())
 		with p:
+			# Execute function in multiprocess mode
   			p.starmap(extract_and_process, function_args)
 	
 		"""

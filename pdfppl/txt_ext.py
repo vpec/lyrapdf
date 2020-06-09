@@ -1,11 +1,8 @@
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.converter import TextConverter, PDFPageAggregator, XMLConverter, HTMLConverter
-from pdfminer.layout import LAParams, LTTextBoxHorizontal
+from pdfminer.converter import HTMLConverter
+from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
-from pdfminer.pdfdevice import TagExtractor
-from io import BytesIO as StringIO
-#from io import StringIO
-from pdfppl import pre_proc #, p2t_constants
+from io import BytesIO
 import re
 import time
 from multiprocessing import Process, Manager
@@ -39,10 +36,8 @@ def convert_pdf_to_txt_pypdf2(path, output_dir, file_name, generate_output = Tru
         except:
             pass
 
-    if (generate_output) :
-        pre_proc.create_text_file(output_dir + "/pypdf2_raw_" + file_name + ".txt", _text) # Insertamos en el fichero el texto extraido
-
     _file.close()
+    return _text
 
 
     
@@ -55,45 +50,51 @@ def convert_pdf_to_txt(path, output_dir, file_name):
                         PDFMiner y saca lo extraído al fichero salida_ExtraccionTexto
         """
     
+    # Declare PDFMiner variables for extraction (with detect_vertical ON)
     _rsrcmgr = PDFResourceManager()
-    _retstr = StringIO()
+    _retstr = BytesIO()
     _codec = 'utf-8'
     _laparams = LAParams(detect_vertical=True)
     _device = HTMLConverter(_rsrcmgr, _retstr, laparams=_laparams)
     _file = open(path, 'rb')
-
     _interpreter = PDFPageInterpreter(_rsrcmgr, _device)
 
-
     _password = '' # Set empty password as default value
-
     _pagenos=set()  # empty page set
+
+    # Declare PDFMiner variables for extraction  (with detect_vertical OFF)
     _rsrcmgr_default = PDFResourceManager()
-    _retstr_default = StringIO()
+    _retstr_default = BytesIO()
     _laparams_default = LAParams() # detect_vertical=False
     _device_default = HTMLConverter(_rsrcmgr_default, _retstr_default, laparams=_laparams_default)
     _interpreter_default = PDFPageInterpreter(_rsrcmgr_default, _device_default)
 
+    # Variable where text is going to be stored
     _text = b""
 
     check_rotated = False
 
-
+    # Iterate through PDF document pages
     for number,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
-
         print("Extracting page: ", number)
-        #interpreter.process_page(page)
 
         rotating = False
 
-        t_start = time.process_time()
+        # If checking page rotation
+        if(check_rotated):
+            # Start to measure time
+            t_start = time.process_time()
+
         # Analyze with detect_vertical
         _interpreter.process_page(page)
 
+        # If checking page rotation
         if(check_rotated):
+            # Elapsed time
             t_elapsed = time.process_time() - t_start
             print("elapsed 1: ", t_elapsed)
             print("countRotated", countRotated(_retstr.getvalue().decode("utf-8")))
+            # Number of ocurrences of "rotated characters"
             num_occ = countRotated(_retstr.getvalue().decode("utf-8")) + 1
 
             # Set timeout based on elapsed time using detect_vertical processing
@@ -107,6 +108,7 @@ def convert_pdf_to_txt(path, output_dir, file_name):
             manager = Manager()
             return_dict = manager.dict()
 
+            # Re-execute page interpreter in another thread
             action_process = Process(target=process_without_detect_vertical, args=(_interpreter_default, _retstr_default, page, return_dict,))
             action_process.start()
             action_process.join(timeout=_timeout)
@@ -136,10 +138,8 @@ def convert_pdf_to_txt(path, output_dir, file_name):
                 # Analyze again with detect_vertical
                 _interpreter.process_page(page)
             
-    
         # Append new text
         _text += _retstr.getvalue()
-        
         
         # Clean buffers
         _retstr.truncate(0)
@@ -147,13 +147,10 @@ def convert_pdf_to_txt(path, output_dir, file_name):
         _retstr_default.truncate(0)
         _retstr_default.seek(0)
 
-
-    print("finishing")
-
-
+    print("Extraction finished")
     _text += b'\n\n'
 
-
+    # Close files
     _file.close()
     _device.close()
     _retstr.close()

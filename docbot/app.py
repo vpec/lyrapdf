@@ -6,11 +6,11 @@ from docbot.parse import question_and_answer
 def run():
 	if(len(sys.argv) == 3):
 		if(sys.argv[1] == "-t"):
-			# Train
+			# -t argument: Train
 			dataset_file = abspath(sys.argv[2]) # dataset directory
 			init_engine(dataset_file)
 		elif(sys.argv[1] == "-p"):
-			# Parse
+			# -p argument: Parse
 			engine_dir = abspath(sys.argv[2]) # engine directory
 			question_and_answer(engine_dir)
 		else:
