@@ -1,53 +1,7 @@
-'''
-Módulo encargado del etiquetado de la extracción de estructuras para
-su posterior procesamiento.
-
-Librerias necesarias:
-  
-		- PDF Miner six:                https://github.com/pdfminer/pdfminer.six
-			- Documentación:            https://media.readthedocs.org/pdf/pdfminer-docs/latest/pdfminer-docs.pdf 
-			Utilizada para transformar PDF a texto plano a través de la función convert_pdf_to_txt
-			> pip install pdfminer.six
-
-		- Smart Pipe Library:           https://pypi.org/project/sspipe/
-			Utilizada para simular el funcionamiento de una pipe y simplificar el código escrito
-
-		- Regular Expresions Python:    https://docs.python.org/2/library/re.html 
-			Utilizada para el preprocesado del texto
-
-		- StringIO:                     https://docs.python.org/2/library/stringio.html
-			Utilizada para etiquetar ficheros, se encarga de etiquetar la salida de los mismos
-
-		- Natural Languaje Tool Kit:    http://www.nltk.org/index.html
-			Utilizada para tokenizar frases y creación de bigramas y trigramas.
-
-'''
-from io import StringIO
-
-# Simple Smart Pipe library
-from sspipe import p
-
-# RegEx library - Expresiones regulares
 import re
-
-# Natural lenguaje Tool Kit
-from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
-from nltk.util import ngrams
-from collections import Counter
-#from unicodedata import normalize
-from os.path import exists
-from os import mknod
 import json
 import matplotlib.pylab as plt
-from scipy.stats import norm
-import numpy as np
-import seaborn as sns
-#from sklearn.cluster import KMeans
 from pdfppl.ckmeans import ckmeans
-import sys
-from unicodedata import category
-
 
 
 
@@ -275,16 +229,6 @@ def analyze_font_size(text):
 	return font_threshold, headings_dict, max_quote
 
 
-def remove_small_text(text):
-	small_text_regex = re.compile(r'(<div style=\"position:absolute;(?:.|\n)*?<span style=\"font-family: .*?; font-size:(.*?)px\">(?:.|\n)*?</div>)', re.UNICODE)
-	match_list = re.findall(small_text_regex, text)
-	processed_text = ""
-	for match in match_list:
-		font_size = int(match[1])
-		if(font_size >= 7):
-			processed_text += match[0]
-	return processed_text
-
 def sort_html(text):
 	div_container_regex = re.compile(r'(<div style=\"position:absolute; border:(?:.|\n)*?left:(.*?)px; top:(.*?)px(?:.|\n)*?height:(.*?)px(?:.|\n)*?<span style=\"font-family:(?:.|\n)*?font-size:(.*?)px(?:.|\n)*?</div>)', re.UNICODE)
 	# Find all regex matchings
@@ -431,19 +375,6 @@ def replace_with_dash(text):
 	text = text.replace(chr(61623), "-")
 	return text
 
-def replace_with_fi(text):
-	p1 = re.compile(r'([a-z])(%|#)(\D)')
-	text = p1.sub(r'\1fi\3',text)
-	p2 = re.compile(r'(\D)(%|#)([a-z])')
-	text = p2.sub(r'\1fi\3',text)
-	return text
-
-def replace_with_fl(text):
-	p1 = re.compile(r'([a-z])(\+)(\D)')
-	text = p1.sub(r'\1fl\3',text)
-	p2 = re.compile(r'(\D)(\+)([a-z])')
-	text = p2.sub(r'\1fl\3',text)
-	return text
 
 def join_lines(text):
 	processed_text = ""
@@ -532,26 +463,6 @@ def join_vs(text):
 def fix_enye(text):
 	enye_regex = re.compile(r'˜ *n', re.UNICODE)
 	processed_text = enye_regex.sub(r'ñ', text)
-	return processed_text
-
-def remove_non_printable(text):
-	return text
-	return text.replace(chr(61623), "-")
-
-
-
-	return bytes(text, 'utf-8').decode('utf-8', 'ignore')
-	return text.strip().decode('utf-8','ignore').encode("utf-8")
-	# Get all unicode characters
-	print(range(sys.maxunicode))
-	all_chars = (chr(i) for i in range(sys.maxunicode))
-	print(all_chars)
-	# Get all non printable characters
-	control_chars = ''.join(c for c in all_chars if category(c) == 'Cc')
-	# Create regex of above characters
-	p1 = re.compile('[%s]' % re.escape(control_chars))
-	# Substitute these characters by empty string in the original string.
-	processed_text = p1.sub(r'', text)
 	return processed_text
 
 def join_ellipsis(text):
