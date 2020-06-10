@@ -6,47 +6,57 @@ from pdfppl.ckmeans import ckmeans
 
 
 def create_binary_file(path, text):
-	'''
-		:param path:    String no vacio relativo a la ruta donde se generará el output
-		:param text:    String a guardar en el fichero
-		:return:        Genera un fichero de texto en el directorio path cuyo contenido
-						 es text
-	'''
+	"""Creates a binary file given a path and text in bytes format
+
+	Args:
+		path (string): path where file is going to be stored
+		text (bytes): text to be stored in file
+	"""
 	file = open(path,'wb+')
 	file.write(text)
 	file.close()
-	return 1
+
 
 
 def create_text_file(path, text):
-	'''
-		:param path:    String no vacio relativo a la ruta donde se generará el output
-		:param text:    String a guardar en el fichero
-		:return:        Genera un fichero de texto en el directorio path cuyo contenido
-						 es text
-	'''
+	"""Creates a text file given a path and text in string format
+
+	Args:
+		path (string): path where file is going to be stored
+		text (string): text to be stored in file
+	"""
 	file = open(path,'w+')
 	file.write(text)
 	file.close()
-	return 1
+
 
 
 
 ##########################################################################################
 
 def split_spans(text):
-	'''
-		:return Keep text and remove miscellaneous elements
-	'''
+	"""Process html text splitting spans by a newline character
 
+	Args:
+		text (string): html text that is going to be processed
+
+	Returns:
+		string: text once it's processed
+	"""
 	p1 = re.compile(r'(>)(<span)', re.MULTILINE | re.UNICODE)
 	processed_text = p1.sub(r'\1\n\2',text)
 	return processed_text
 
 def delete_misc(text):
-	'''
-		:return Keep text and remove miscellaneous elements
-	'''
+	"""Proccess html text deleting miscellaneous elements, keeping
+		only text spans
+
+	Args:
+		text (string): html text that is going to be processed
+
+	Returns:
+		string: text once it's processed
+	"""
 	p1 = re.compile(r'<span style="font-family:.*</span>', re.MULTILINE | re.UNICODE | re.DOTALL)
 	match_list = re.findall(p1, text)
 	processed_text = ""
@@ -55,6 +65,15 @@ def delete_misc(text):
 	return processed_text
 	
 def delete_dup_greater_than(text):
+	"""Proccess html text deleting duplicated '>' generated after
+		previous processing steps
+
+	Args:
+		text (string): html text that is going to be processed
+
+	Returns:
+		string: text once it's processed
+	"""
 	p1 = re.compile(r'(<br>)(>)(</)', re.UNICODE)
 	processed_text = p1.sub(r'\1\3',text)
 	return processed_text
@@ -70,6 +89,14 @@ def delete_non_textual_elements(text):
 	return processed_text2
 
 def get_page_bounds(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	positions_regex = re.compile(r'<span style=\"position:absolute; border:.*?top:(.*?)px.*?height:(.*?)px.*?></span>\n<div style=\"position:absolute;.*?Page.*?</a></div>', re.UNICODE)
 	# Find all matchings
 	match_list = re.findall(positions_regex, text)
@@ -92,6 +119,17 @@ def get_page_bounds(text):
 	return bounds_list
 
 def is_header(bounds_list, position, font_size, i):
+	"""[summary]
+
+	Args:
+		bounds_list ([type]): [description]
+		position ([type]): [description]
+		font_size ([type]): [description]
+		i ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	if(font_size >= 18):
 		# If text is big, it isn't a header
 		return False, i
@@ -122,6 +160,15 @@ def is_header(bounds_list, position, font_size, i):
 		return it_is_header, i
 
 def delete_headers(text, bounds_list):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+		bounds_list ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	headers_regex = re.compile(r'(<div style=\"position:absolute; border:.*?top:(.*?)px.*?<span style=\"font-family:.*?font-size:(.*?)px.*?</div>)', re.UNICODE | re.DOTALL)
 	# Store processed text
 	processed_text = ""
@@ -141,12 +188,28 @@ def delete_headers(text, bounds_list):
 
 
 def delete_vertical_text(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	vertical_text_regex = re.compile(r'((<div style=\"position:absolute; border:.*?)\n(<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(.|\n)*?</div>)', re.UNICODE)
 	processed_text = vertical_text_regex.sub("", text)
 	return processed_text
 
 
 def kmeans(font_size_list):
+	"""[summary]
+
+	Args:
+		font_size_list ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	# Check if font_size_list isn't empty
 	if(font_size_list == []):
 		return {}
@@ -166,6 +229,14 @@ def kmeans(font_size_list):
 
 
 def analyze_font_size(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	span_regex = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
 	# Find all matchings
 	match_list = re.findall(span_regex, text)
@@ -230,6 +301,14 @@ def analyze_font_size(text):
 
 
 def sort_html(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	div_container_regex = re.compile(r'(<div style=\"position:absolute; border:(?:.|\n)*?left:(.*?)px; top:(.*?)px(?:.|\n)*?height:(.*?)px(?:.|\n)*?<span style=\"font-family:(?:.|\n)*?font-size:(.*?)px(?:.|\n)*?</div>)', re.UNICODE)
 	# Find all regex matchings
 	match_list = re.findall(div_container_regex, text)
@@ -274,6 +353,14 @@ def sort_html(text):
 
 
 def extract_text_md(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	# Get font size analysis results
 	font_threshold, headings_dict, max_quote = analyze_font_size(text)
 	span_regex = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
@@ -320,10 +407,15 @@ def extract_text_md(text):
 	return processed_text
 
 
-def detect_quotation_marks(text):
-	p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
-
 def replace_br(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	line_regex = re.compile(r'^.*?$', re.UNICODE | re.MULTILINE)
 	title_line_regex = re.compile(r'^#+.*?$', re.UNICODE | re.MULTILINE)
 	br_regex = re.compile(r'(?:<br>)+', re.UNICODE | re.MULTILINE)
@@ -343,11 +435,27 @@ def replace_br(text):
 	return processed_text
 
 def remove_blank_lines(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	blank_line_regex = re.compile(r'^\s+$', re.UNICODE | re.MULTILINE)
 	processed_text = blank_line_regex.sub(r'', text)
 	return processed_text
 
 def replace_cid(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	# Replace with dashes
 	cid_regex_1 = re.compile(r'(\(cid:(114|131)\) *)') 
 	text = cid_regex_1.sub(r'- ',text)
@@ -370,6 +478,14 @@ def replace_cid(text):
 	return text
 
 def replace_with_dash(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	dash_regex = re.compile(r'(•|–|·|—|−|―|▪)')
 	text = dash_regex.sub(r'-',text)
 	text = text.replace(chr(61623), "-")
@@ -377,6 +493,14 @@ def replace_with_dash(text):
 
 
 def join_lines(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	processed_text = ""
 	line_regex = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
 	title_line_regex = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
@@ -409,6 +533,14 @@ def join_lines(text):
 	
 
 def join_by_hyphen(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	hyphen_regex = re.compile(r'(\w) *(?:-|\u00AD) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
 	# Execute first hyphen union processing
 	processed_text = hyphen_regex.sub(r'\1\2', text)
@@ -435,6 +567,14 @@ def join_by_hyphen(text):
 	return processed_text2
 
 def remove_duplicated_whitespaces(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	tab_regex = re.compile(r'\t+', re.MULTILINE | re.UNICODE)
 	blank_space_regex = re.compile(r' +', re.MULTILINE | re.UNICODE)
 	beginning_blank_space = re.compile(r'^ +', re.MULTILINE | re.UNICODE)
@@ -446,26 +586,66 @@ def remove_duplicated_whitespaces(text):
 	return processed_text
 	
 def join_et_al(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	et_al_regex = re.compile(r'(et +al *\.) *\n+ *(.)', re.UNICODE)
 	processed_text = et_al_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def join_beta(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	beta_regex = re.compile(r'(β) *\n+ *(-)', re.UNICODE)
 	processed_text = beta_regex.sub(r'\1\2', text)
 	return processed_text
 
 def join_vs(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	vs_regex = re.compile(r'(vs) *\. *\n+ *(.)', re.UNICODE)
 	processed_text = vs_regex.sub(r'\1. \2', text)
 	return processed_text
 
 def fix_enye(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	enye_regex = re.compile(r'˜ *n', re.UNICODE)
 	processed_text = enye_regex.sub(r'ñ', text)
 	return processed_text
 
 def join_ellipsis(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	title_ellipsis_regex = re.compile(r'^(#+.*\.\.\.) *\n+#+ *([a-zA-Z])', re.MULTILINE | re.UNICODE)
 	ellipsis_regex = re.compile(r'(\.\.\.) *\n+ *([a-z])', re.UNICODE)
 	processed_text = title_ellipsis_regex.sub(r'\1 \2', text)
@@ -473,26 +653,66 @@ def join_ellipsis(text):
 	return processed_text
 	
 def join_subtraction(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	subtraction_regex = re.compile(r'(\d) *\n+ *(- *\d)', re.UNICODE)
 	processed_text = subtraction_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def fix_marks(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	marks_regex = re.compile(r'(\w|\)) *(\.|,|:|;)', re.UNICODE)
 	processed_text = marks_regex.sub(r'\1\2', text)
 	return processed_text
 
 def remove_false_titles(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	false_title_regex = re.compile(r'^#+ *([^\-\w¿\?\n]*)$', re.MULTILINE | re.UNICODE)
 	processed_text = false_title_regex.sub(r'\1', text)
 	return processed_text
 
 def join_by_colon(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	colon_separated_regex = re.compile(r'(:) *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
 	processed_text = colon_separated_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def join_title_questions(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	line_regex = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
 	line_list = re.findall(line_regex, text)
 	title_regex = re.compile(r'^(#+)(.*)$', re.MULTILINE | re.UNICODE)
@@ -533,17 +753,41 @@ def join_title_questions(text):
 	return processed_text
 
 def remove_duplicated_dashes(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	dup_dashes_regex = re.compile(r'^ *(- +)+', re.MULTILINE | re.UNICODE)
 	processed_text = dup_dashes_regex.sub(r'- ', text)
 	return processed_text
 
 def remove_useless_lines(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	# Useless lines
 	useless_line_regex = re.compile(r'^[^\w\n]*$', re.MULTILINE | re.UNICODE)
 	processed_text = useless_line_regex.sub(r'', text)   
 	return processed_text
 
 def remove_repeated_strings(text):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	# Repeated strings
 	repeated_strings_regex = re.compile(r'([^#IVX0\n]{1,4}?)(\1){3,}', re.UNICODE)
 	processed_text = repeated_strings_regex.sub(r'\1', text)
@@ -551,6 +795,15 @@ def remove_repeated_strings(text):
 
 
 def convert_md_to_json(text, name):
+	"""[summary]
+
+	Args:
+		text ([type]): [description]
+		name ([type]): [description]
+
+	Returns:
+		[type]: [description]
+	"""
 	line_regex = re.compile(r'^.+$', re.MULTILINE | re.UNICODE)
 	title_regex = re.compile(r'^(#+) *(.*)$', re.MULTILINE | re.UNICODE)
 	number_sign_regex = re.compile(r'\\ *#', re.MULTILINE | re.UNICODE)
