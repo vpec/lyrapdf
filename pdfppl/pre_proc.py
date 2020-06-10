@@ -212,11 +212,11 @@ def kmeans(font_size_list):
 
 
 def analyze_font_size(text):
-	p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
-	match_list = re.findall(p1, text)
+	span_regex = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
+	# Find all matchings
+	match_list = re.findall(span_regex, text)
+	# Initialize font size dictionary
 	font_size_dict = {}
-	summatory = 0
-	num_data = 0
 	data = []
 	for match in match_list:
 		font = match[0]
@@ -229,78 +229,51 @@ def analyze_font_size(text):
 		else:
 			# It doesn't exist, create new pair
 			font_size_dict[font_size] = matched_text_len
-		summatory += font_size * matched_text_len
-		num_data += matched_text_len
+		# For plotting purposes
 		data += [font_size] * matched_text_len
 
-	"""
-	print(font_size_dict)
-	mean = summatory / num_data
-	mu, std = norm.fit(data)
-	xmin, xmax = plt.xlim()
-	x = np.linspace(xmin, xmax, 100)
-	p = norm.pdf(x, mu, std)
-	plt.plot(x, p, 'k', linewidth=2)
-
-	print("mean", mean)
-	# Plot analysis
-	lists = sorted(font_size_dict.items())
-	x, y = zip(*lists)
-	#plt.plot(x, y)
-	#plt.bar(font_size_dict.keys(), font_size_dict.values(), color='g')
-	"""
+	# Plot data
 	plt.hist(data)
 	#plt.show()
 
+	# Delete font size 0 if it exists in dictionary
+	# Commonly it happens when all blank spaces in document
+	# have been detect as 0 size, so it distorts analysis results
 	if(0 in font_size_dict):
 		print("delete element 0")
 		del font_size_dict[0]
-
+	# Accumulated percentage threshold for standard/title text
 	percentage = 0.95
+	# Accumulated percentage threshold for quote/standard text
 	percentage_quote = 0.10
+	# Sort keys in dictionary
 	sorted_font_size_dict = sorted(font_size_dict)
 	print(sorted_font_size_dict)
 	print(max(font_size_dict, key=font_size_dict.get))
-
+	# Total number of characters in document with size > 0
 	total = sum(font_size_dict.values())
 	percentage_sum = 0
 	max_quote = 0
 	i = 0 # Keep track of the index
 	for key in sorted_font_size_dict:
+		# Update accumulated percentage
 		percentage_sum += (font_size_dict[key] / total)
+		# Increase i
 		i += 1
+		# Check if quote/standard threshold hasn't been surpassed
 		if(percentage_sum <= percentage_quote):
-			print("size", key)
-			print("quote_sum", percentage_sum)
 			i_quote = i
 			max_quote = key
+		# Check if standard/title threshold has been surpassed
 		if(percentage_sum >= percentage):
 			font_threshold = key
-			print("key", key)
-			print("percentage_sum", percentage_sum)
-			print("percentage_sum old", (percentage_sum - (font_size_dict[key] / total)))
 			break
+	# Get intervals for title text font sizes
 	headings_dict = kmeans(sorted_font_size_dict[i:])
-	print("Quote font", max_quote)
-
+	# Update max_quote if font_threshold by a factor is higher
 	max_quote = max(max_quote, font_threshold * 0.8)
-
-	print("New Quote font", max_quote)
-
-	#sns.distplot(data)
-	#plt.show()
-	# return key with max value (most frequent font size)
-	#return max(font_size_dict, key=font_size_dict.get)
 	return font_threshold, headings_dict, max_quote
 
-"""
-def replace_br(text):
-	p1 = re.compile(r'<br>', re.UNICODE)
-	p2 = re.compile(r'\n+', re.UNICODE)
-	processed_text = p1.sub(r'\n', text)
-	processed_text2 = p2.sub(r'\n', processed_text)
-	return processed_text2
-"""
 
 def remove_small_text(text):
 	small_text_regex = re.compile(r'(<div style=\"position:absolute;(?:.|\n)*?<span style=\"font-family: .*?; font-size:(.*?)px\">(?:.|\n)*?</div>)', re.UNICODE)
@@ -314,28 +287,32 @@ def remove_small_text(text):
 
 def sort_html(text):
 	div_container_regex = re.compile(r'(<div style=\"position:absolute; border:(?:.|\n)*?left:(.*?)px; top:(.*?)px(?:.|\n)*?height:(.*?)px(?:.|\n)*?<span style=\"font-family:(?:.|\n)*?font-size:(.*?)px(?:.|\n)*?</div>)', re.UNICODE)
+	# Find all regex matchings
 	match_list = re.findall(div_container_regex, text)
 	n = len(match_list)
 	i = 0
 	top = 0
 	prev_top = 0
-	print("n", n)
+	# Iterate through div container matchings
 	while(i < n):
 		top = int(match_list[i][2])
+		# Check if top value is not decreasing
 		if(top >= prev_top):
 			prev_top = top
 			i += 1
 		else:
+			# If top value decreases
 			element = match_list[i]
 			bad_i = i
-			#print(i)
+			# Look backwards until correct position is found
 			while(top < int(match_list[i-1][2]) and i > 0):
 				i -= 1
+			# Relocate the element
 			del match_list[bad_i]
 			match_list.insert(i, element)
 			prev_top = top
 	
-	# Check sorting
+	# Check if sorting went good
 	top = 0
 	prev_top = 0
 	for match in match_list:
@@ -344,76 +321,56 @@ def sort_html(text):
 			print("BAD SORTING")
 		prev_top = top       
 
-
+	# Compose new text string with sorted elements
 	processed_text = ""
 	for match in match_list:
 		processed_text += match[0]
 
 	return processed_text
 
-def extract_text(text):
-	font_threshold, headings_dict, max_quote = analyze_font_size(text)
-	p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
-	match_list = re.findall(p1, text)
-	processed_text = ""
-	prev_font_size = 0
-	text_list = [] # Initialize as empty list
-	for match in match_list:
-		#print(match)
-		font = match[0]
-		font_size = int(match[1])
-		matched_text = match[2]
-		if(len(text_list) == 0):
-			# New text element
-			text_list.append(matched_text + '\n')
-		elif(prev_font_size == font_size):
-			# Same text element
-			text_list[-1] += matched_text + '\n'
-		else:
-			if(prev_font_size <= font_threshold + 1 and font_size <= font_threshold + 1):
-				# Same text element
-				text_list[-1] += matched_text + '\n'
-			else:
-				# New text element
-				text_list.append(matched_text + '\n')
-			
-		prev_font_size = font_size
-		#print(text_list[-1])
-	return json.dumps(text_list, ensure_ascii=False).encode('utf8')
 
 def extract_text_md(text):
+	# Get font size analysis results
 	font_threshold, headings_dict, max_quote = analyze_font_size(text)
-	p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
-	p2 = re.compile(r'\n+', re.UNICODE)
-	p3 = re.compile(r'^ *\d+(?: *(?:,|-) *\d+)* *(?:<br>)*$', re.MULTILINE | re.UNICODE)
-	p4 = re.compile(r'(^|<br>)( *#)', re.MULTILINE | re.UNICODE)
-	match_list = re.findall(p1, text)
+	span_regex = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
+	newline_regex = re.compile(r'\n+', re.UNICODE)
+	quote_reference_number_regex = re.compile(r'^ *\d+(?: *(?:,|-) *\d+)* *(?:<br>)*$', re.MULTILINE | re.UNICODE)
+	number_sign_regex = re.compile(r'(^|<br>)( *#)', re.MULTILINE | re.UNICODE)
+	# Find all span regex matchings
+	match_list = re.findall(span_regex, text)
 	processed_text = ""
 	prev_font_size = 0
+	# Iterate through span's match list
 	for match in match_list:
-		#print(match)
 		font = match[0]
 		font_size = int(match[1])
 		matched_text = match[2]
 		# Convert matched text \n to <br>
-		matched_text = p2.sub(r'<br>', matched_text)
-
-		matched_text = p4.sub(r'\1\\\2', matched_text)
-
-		if((p3.search(matched_text) == None or font_size > max_quote) and font_size > 0):
+		matched_text = newline_regex.sub(r'<br>', matched_text)
+		# Convert lines beginning with '#' to '\#',
+		# so they aren't confused with MarkDown titles
+		matched_text = number_sign_regex.sub(r'\1\\\2', matched_text)
+		# Check if font size > 0 and text isn't considered a quote reference number
+		if((quote_reference_number_regex.search(matched_text) == None or font_size > max_quote) and font_size > 0):
 			if(prev_font_size <= font_threshold and font_size <= font_threshold):
+				# Append text as standard text
 				processed_text += '\n' + matched_text
 			elif(font_size == prev_font_size):
+				# Append text as title text continuation
 				processed_text += ' ' + matched_text
 			elif(font_size > font_threshold):
+				# Append text as a starting title text
 				processed_text += '\n' + '#' * headings_dict[font_size] + ' ' + matched_text
-				#processed_text += '\n### ' + matched_text
 			elif(prev_font_size > font_threshold):
+				# Append text as standard text
 				processed_text += '\n' + matched_text
-			else:  
+			else:
+				# Uncovered case (never happends)
+				print("uncovered case")
 				print("font_size", font_size)
 				print("prev_font_size", prev_font_size)
 				print("most_common_size", font_threshold)
+			# Update previous font size value
 			prev_font_size = font_size
 
 	return processed_text
@@ -423,52 +380,54 @@ def detect_quotation_marks(text):
 	p1 = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
 
 def replace_br(text):
-	p1 = re.compile(r'^.*?$', re.UNICODE | re.MULTILINE)
-	p2 = re.compile(r'^#+.*?$', re.UNICODE | re.MULTILINE)
-	p3 = re.compile(r'(?:<br>)+', re.UNICODE | re.MULTILINE)
+	line_regex = re.compile(r'^.*?$', re.UNICODE | re.MULTILINE)
+	title_line_regex = re.compile(r'^#+.*?$', re.UNICODE | re.MULTILINE)
+	br_regex = re.compile(r'(?:<br>)+', re.UNICODE | re.MULTILINE)
 	# Initialize processed text string
 	processed_text = ""
-	match_list = re.findall(p1, text)
+	# Find all line regex matchings
+	match_list = re.findall(line_regex, text)
+	# Iterate through all lines in text
 	for match in match_list:
-		if(p2.search(match) != None):
-			# It is a title, so replace <br> with blank space
-			processed_match = p3.sub(r' ', match)
+		if(title_line_regex.search(match) != None):
+			# If it is a title, replace <br> with blank space
+			processed_match = br_regex.sub(r' ', match)
 		else:
-			# It is not a title, so replace <br> with \n
-			processed_match = p3.sub(r'\n', match)
+			# If it is not a title, replace <br> with \n
+			processed_match = br_regex.sub(r'\n', match)
 		processed_text += processed_match + '\n'
 	return processed_text
 
 def remove_blank_lines(text):
-	p1 = re.compile(r'^\s+$', re.UNICODE | re.MULTILINE)
-	processed_text = p1.sub(r'', text)
+	blank_line_regex = re.compile(r'^\s+$', re.UNICODE | re.MULTILINE)
+	processed_text = blank_line_regex.sub(r'', text)
 	return processed_text
 
 def replace_cid(text):
 	# Replace with dashes
-	p1 = re.compile(r'(\(cid:(114|131)\) *)') 
-	text = p1.sub(r'- ',text)
+	cid_regex_1 = re.compile(r'(\(cid:(114|131)\) *)') 
+	text = cid_regex_1.sub(r'- ',text)
 	# Replace with ó
-	p2 = re.compile(r'(\(cid:214\) *)') 
-	text = p2.sub(r'ó',text)
+	cid_regex_2 = re.compile(r'(\(cid:214\) *)') 
+	text = cid_regex_2.sub(r'ó',text)
 	# Replace with cid:1 (blank space)
-	p3 = re.compile(r'\(cid:[0-5]\) *', re.MULTILINE | re.DOTALL |re.UNICODE)
-	text = p3.sub(r'(cid:1)', text)
+	cid_regex_3 = re.compile(r'\(cid:[0-5]\) *', re.MULTILINE | re.DOTALL |re.UNICODE)
+	text = cid_regex_3.sub(r'(cid:1)', text)
 	# Replace with ASCII extended chars
-	p4 = re.compile(r'(\(cid:(19[0-9])\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
-	text4 = p4.sub(lambda m: chr(int(m.group(2))+27),text)
-	p5 = re.compile(r'(\(cid:((21[5-9]|22[0-9]))\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
-	text = p5.sub(lambda m: chr(int(m.group(2))+30),text)
-	p6 = re.compile(r'(\(cid:(2[0-9][0-9])\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
-	text = p6.sub(lambda m: chr(int(m.group(2))+28),text)
+	cid_regex_4 = re.compile(r'(\(cid:(19[0-9])\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
+	text4 = cid_regex_4.sub(lambda m: chr(int(m.group(2))+27),text)
+	cid_regex_5 = re.compile(r'(\(cid:((21[5-9]|22[0-9]))\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
+	text = cid_regex_5.sub(lambda m: chr(int(m.group(2))+30),text)
+	cid_regex_6 = re.compile(r'(\(cid:(2[0-9][0-9])\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
+	text = cid_regex_6.sub(lambda m: chr(int(m.group(2))+28),text)
 	# Generic replacing
-	p7 = re.compile(r'(\(cid:([0-9]+)\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
-	text = p7.sub(lambda m: chr(int(m.group(2))+31),text)
+	cid_regex_generic = re.compile(r'(\(cid:([0-9]+)\) *)', re.MULTILINE | re.DOTALL |re.UNICODE)
+	text = cid_regex_generic.sub(lambda m: chr(int(m.group(2))+31),text)
 	return text
 
 def replace_with_dash(text):
-	p1 = re.compile(r'(•|–|·|—|−|―|▪)')
-	text = p1.sub(r'-',text)
+	dash_regex = re.compile(r'(•|–|·|—|−|―|▪)')
+	text = dash_regex.sub(r'-',text)
 	text = text.replace(chr(61623), "-")
 	return text
 
@@ -487,93 +446,92 @@ def replace_with_fl(text):
 	return text
 
 def join_lines(text):
-	#p1 = re.compile(r'(?:\w|,|-|\"|“|\)) *?\n+ *?(?:\w|\(|\"|\.|“|,)', re.MULTILINE | re.UNICODE)
-	#(^ *#+.*$)*(\n+^ *[^#].*$)*
-
 	processed_text = ""
-	p1 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
-	p2 = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
-	#p3 = re.compile(r'((?:\w|,|-|\"|“|”|’|\(|\)|;|%|€|≥|≤|«|»|/|=|®|©|±|∆|\[|\]) *?)\n+( *?(?:\w|\(|\)|\"|\.|“|”|’|,|€|≥|≤|«|»|&|;|:|/|=|®|©|±|∆|\[|\]))', re.MULTILINE | re.UNICODE)
-	p3 = re.compile(r'([^\.\n: \+\*\?¿√] *?)\n+( *?[^\-\n \+\*\?¿√])', re.MULTILINE | re.UNICODE)
-	
-	# caution:  
-	
+	line_regex = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
+	title_line_regex = re.compile(r'^ *#.*$', re.MULTILINE | re.UNICODE)
+	lines_to_join_regex = re.compile(r'([^\.\n: \+\*\?¿√] *?)\n+( *?[^\-\n \+\*\?¿√])', re.MULTILINE | re.UNICODE)
+
+	# Initialize processed_match variable. Only standard text lines have to be processed.
 	processed_match = ""
-	match_list = re.findall(p1, text)
+	# Find all regex line matchings
+	match_list = re.findall(line_regex, text)
+	# Iterate through all line matchings
 	for match in match_list:
-		if(p2.search(match) != None):
+		# Check if it is a title line
+		if(title_line_regex.search(match) != None):
 			# It is a title
 			# Process previous standard text
-			processed_match = p3.sub(r'\1 \2',processed_match)
+			processed_match = lines_to_join_regex.sub(r'\1 \2',processed_match)
+			# Append previous standard text once is processed
 			processed_text += processed_match
+			# Empty processed_match string
 			processed_match = ""
-			# Append title text
+			# Append title text (current match)
 			processed_text += match + '\n'
 		else:
-			# It is not a title
+			# It is not a title, append to processed_match string
 			processed_match += match + '\n'
-	# Process previous standard text
-	processed_match = p3.sub(r'\1 \2',processed_match)
+	# Process previous standard text, in case some hasn't been processed yet
+	processed_match = lines_to_join_regex.sub(r'\1 \2',processed_match)
 	processed_text += processed_match
 	return processed_text
 	
 
 def join_by_hyphen(text):
-	p1 = re.compile(r'(\w) *(?:-|\u00AD) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
-	#\n- *\n* *[a-z]
-	#p2 = re.compile(r'([a-z]) *(?:\n+ *)?- *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
-	processed_text = p1.sub(r'\1\2', text)
+	hyphen_regex = re.compile(r'(\w) *(?:-|\u00AD) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
+	# Execute first hyphen union processing
+	processed_text = hyphen_regex.sub(r'\1\2', text)
 
-	
-	p2 = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
-	p3 = re.compile(r'^#', re.MULTILINE | re.UNICODE)
-	p4 = re.compile(r'^(#+[^\-\u00AD\n]*[a-zA-Z])(?:\-|\u00AD) +([a-zA-Z])', re.MULTILINE | re.UNICODE)
-	
-	match_list = re.findall(p2, processed_text)
+	line_regex = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
+	title_regex = re.compile(r'^#', re.MULTILINE | re.UNICODE)
+	hyphen_in_title_regex = re.compile(r'^(#+[^\-\u00AD\n]*[a-zA-Z])(?:\-|\u00AD) +([a-zA-Z])', re.MULTILINE | re.UNICODE)
+	# Find all line regex matchings (in previously processed text)
+	match_list = re.findall(line_regex, processed_text)
+	# Initialize second processing string
 	processed_text2 = ""
-
+	# Iterate through line regex matchings
 	for match in match_list:
-		if(p3.search(match) == None):
+		if(title_regex.search(match) == None):
 			# Standard text
 			processed_text2 += match + '\n'
 		else:
 			# Title text
-			while(p4.search(match) != None):
+			while(hyphen_in_title_regex.search(match) != None):
 				# Contains a hyphen
-				match = p4.sub(r'\1\2', match)
+				match = hyphen_in_title_regex.sub(r'\1\2', match)
 			processed_text2 += match + '\n'
 	
 	return processed_text2
 
 def remove_duplicated_whitespaces(text):
-	p1 = re.compile(r'\t+', re.MULTILINE | re.UNICODE)
-	p2 = re.compile(r' +', re.MULTILINE | re.UNICODE)
-	p3 = re.compile(r'^ +', re.MULTILINE | re.UNICODE)
-	p4 = re.compile(r' +$', re.MULTILINE | re.UNICODE)
-	processed_text = p1.sub(r' ', text)
-	processed_text = p2.sub(r' ', processed_text)
-	processed_text = p3.sub(r'', processed_text)
-	processed_text = p4.sub(r'', processed_text)
+	tab_regex = re.compile(r'\t+', re.MULTILINE | re.UNICODE)
+	blank_space_regex = re.compile(r' +', re.MULTILINE | re.UNICODE)
+	beginning_blank_space = re.compile(r'^ +', re.MULTILINE | re.UNICODE)
+	ending_blank_space = re.compile(r' +$', re.MULTILINE | re.UNICODE)
+	processed_text = tab_regex.sub(r' ', text)
+	processed_text = blank_space_regex.sub(r' ', processed_text)
+	processed_text = beginning_blank_space.sub(r'', processed_text)
+	processed_text = ending_blank_space.sub(r'', processed_text)
 	return processed_text
 	
 def join_et_al(text):
-	p1 = re.compile(r'(et +al *\.) *\n+ *(.)', re.UNICODE)
-	processed_text = p1.sub(r'\1 \2', text)
+	et_al_regex = re.compile(r'(et +al *\.) *\n+ *(.)', re.UNICODE)
+	processed_text = et_al_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def join_beta(text):
-	p1 = re.compile(r'(β) *\n+ *(-)', re.UNICODE)
-	processed_text = p1.sub(r'\1\2', text)
+	beta_regex = re.compile(r'(β) *\n+ *(-)', re.UNICODE)
+	processed_text = beta_regex.sub(r'\1\2', text)
 	return processed_text
 
 def join_vs(text):
-	p1 = re.compile(r'(vs) *\. *\n+ *(.)', re.UNICODE)
-	processed_text = p1.sub(r'\1. \2', text)
+	vs_regex = re.compile(r'(vs) *\. *\n+ *(.)', re.UNICODE)
+	processed_text = vs_regex.sub(r'\1. \2', text)
 	return processed_text
 
 def fix_enye(text):
-	p1 = re.compile(r'˜ *n', re.UNICODE)
-	processed_text = p1.sub(r'ñ', text)
+	enye_regex = re.compile(r'˜ *n', re.UNICODE)
+	processed_text = enye_regex.sub(r'ñ', text)
 	return processed_text
 
 def remove_non_printable(text):
@@ -597,32 +555,30 @@ def remove_non_printable(text):
 	return processed_text
 
 def join_ellipsis(text):
-	p1 = re.compile(r'^(#+.*\.\.\.) *\n+#+ *([a-zA-Z])', re.MULTILINE | re.UNICODE)
-	p2 = re.compile(r'(\.\.\.) *\n+ *([a-z])', re.UNICODE)
-	processed_text = p1.sub(r'\1 \2', text)
-	processed_text = p2.sub(r'\1 \2', processed_text)
+	title_ellipsis_regex = re.compile(r'^(#+.*\.\.\.) *\n+#+ *([a-zA-Z])', re.MULTILINE | re.UNICODE)
+	ellipsis_regex = re.compile(r'(\.\.\.) *\n+ *([a-z])', re.UNICODE)
+	processed_text = title_ellipsis_regex.sub(r'\1 \2', text)
+	processed_text = ellipsis_regex.sub(r'\1 \2', processed_text)
 	return processed_text
 	
 def join_subtraction(text):
-	p1 = re.compile(r'(\d) *\n+ *(- *\d)', re.UNICODE)
-	processed_text = p1.sub(r'\1 \2', text)
+	subtraction_regex = re.compile(r'(\d) *\n+ *(- *\d)', re.UNICODE)
+	processed_text = subtraction_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def fix_marks(text):
-	p1 = re.compile(r'(\w|\)) *(\.|,|:|;)', re.UNICODE)
-	processed_text = p1.sub(r'\1\2', text)
+	marks_regex = re.compile(r'(\w|\)) *(\.|,|:|;)', re.UNICODE)
+	processed_text = marks_regex.sub(r'\1\2', text)
 	return processed_text
 
 def remove_false_titles(text):
-	p1 = re.compile(r'^#+ *([^\-\w¿\?\n]*)$', re.MULTILINE | re.UNICODE)
-	processed_text = p1.sub(r'\1', text)
+	false_title_regex = re.compile(r'^#+ *([^\-\w¿\?\n]*)$', re.MULTILINE | re.UNICODE)
+	processed_text = false_title_regex.sub(r'\1', text)
 	return processed_text
 
 def join_by_colon(text):
-	p1 = re.compile(r'(:) *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
-	#p1 = re.compile(r'(:) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
-
-	processed_text = p1.sub(r'\1 \2', text)
+	colon_separated_regex = re.compile(r'(:) *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
+	processed_text = colon_separated_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def join_title_questions(text):
@@ -666,73 +622,88 @@ def join_title_questions(text):
 	return processed_text
 
 def remove_duplicated_dashes(text):
-	p1 = re.compile(r'^ *(- +)+', re.MULTILINE | re.UNICODE)
-	#p1 = re.compile(r'(:) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
-
-	processed_text = p1.sub(r'- ', text)
+	dup_dashes_regex = re.compile(r'^ *(- +)+', re.MULTILINE | re.UNICODE)
+	processed_text = dup_dashes_regex.sub(r'- ', text)
 	return processed_text
 
 def remove_useless_lines(text):
 	# Useless lines
-	p1 = re.compile(r'^[^\w\n]*$', re.MULTILINE | re.UNICODE)
-	processed_text = p1.sub(r'', text)   
+	useless_line_regex = re.compile(r'^[^\w\n]*$', re.MULTILINE | re.UNICODE)
+	processed_text = useless_line_regex.sub(r'', text)   
 	return processed_text
 
 def remove_repeated_strings(text):
 	# Repeated strings
-	p1 = re.compile(r'([^#IVX0\n]{1,4}?)(\1){3,}', re.UNICODE)
-	processed_text = p1.sub(r'\1', text)
+	repeated_strings_regex = re.compile(r'([^#IVX0\n]{1,4}?)(\1){3,}', re.UNICODE)
+	processed_text = repeated_strings_regex.sub(r'\1', text)
 	return processed_text
 
 
 def convert_md_to_json(text, name):
-	p1 = re.compile(r'^.+$', re.MULTILINE | re.UNICODE)
-	p2 = re.compile(r'^(#+) *(.*)$', re.MULTILINE | re.UNICODE)
-	p3 = re.compile(r'\\ *#', re.MULTILINE | re.UNICODE)
-	match_list = re.findall(p1, text)
+	line_regex = re.compile(r'^.+$', re.MULTILINE | re.UNICODE)
+	title_regex = re.compile(r'^(#+) *(.*)$', re.MULTILINE | re.UNICODE)
+	number_sign_regex = re.compile(r'\\ *#', re.MULTILINE | re.UNICODE)
+	# Find all non blank line matchings
+	match_list = re.findall(line_regex, text)
+	# Document dictionary
 	doc = {
 		"document": name,
 		"level" : 0
 	}
+	# Initialize list of sublists
 	content_list = [[doc]]
 
 	level = 0
 	prev_level = level
-	
+	# Iterate through lines in text
 	for match in match_list:
-		heading_match = p2.search(match)
+		heading_match = title_regex.search(match)
+		# Check if line is a title
 		if(heading_match == None):
 			# Standard text
 			level = 7
-			match = p3.sub(r'#', match)
+			# Restore number signs to normal
+			match = number_sign_regex.sub(r'#', match)
+			# Matched text dictionary
 			x = {
 				"text": match,
 				"level" : level
 			}
-			
 		else:
 			# Title text
+			# Obtain title level: number of '#'
 			level = len(heading_match.group(1))
-			match = p3.sub(r'#', match)
+			# Restore number signs to normal
+			match = number_sign_regex.sub(r'#', match)
+			# Matched text dictionary
 			x = {
 				"text" : heading_match.group(2),
 				"level" : level
 			}
-
 		if(level > prev_level):
-			content_list.append([x]) # New sublist
+			# If current level is higher
+			# Create new sublist and append
+			content_list.append([x])
 		elif(level < prev_level):
+			# If current level is lower
+			# Insert higher level elements as "content" of the
+			# latest same or lower level element
 			while(content_list[-2][-1]["level"] >= level):
 				content_list[-2][-1]["content"] = content_list[-1]
 				del content_list[-1]
+			# Append to current sublist
 			content_list[-1].append(x)
 		else:
+			# If current level is the same as the previous one
+			# Append to current sublist
 			content_list[-1].append(x)
-
+		# Update previous level value before new iteration
 		prev_level = level
-
+	# Insert higher level elements as "content" of the
+	# latest same or lower level element, until the "document"
+	# level is reached (level 0).
 	while(content_list[-1][-1]["level"] > 0):
 		content_list[-2][-1]["content"] = content_list[-1]
 		del content_list[-1]        
-	
+	# Return document dictionary as JSON
 	return json.dumps(doc, ensure_ascii=False).encode('utf8')
