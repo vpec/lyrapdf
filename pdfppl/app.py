@@ -20,11 +20,28 @@ from random import randint
 
 
 def path_leaf(path):
+	"""Returns the leaf of a given path.
+
+	Args:
+		path (string): path that is going to be processed.
+
+	Returns:
+		string: path leaf.
+	"""
 	head, tail = ntpath.split(path)
 	return tail or ntpath.basename(head)
 
 
 def process_html(raw_html_text):
+	"""Processes hmtl raw text (originally a pdf) and gets rid of
+		unnecessary elements, keeping the text content in it.
+
+	Args:
+		raw_html_text (string): html text to be processed.
+
+	Returns:
+		string: html text once is processed.
+	"""
 	bounds_list = pre_proc.get_page_bounds(raw_html_text)
 
 	processed_text_html = ( pre_proc.split_spans(raw_html_text) 	| p(pre_proc.delete_non_textual_elements)
@@ -35,6 +52,16 @@ def process_html(raw_html_text):
 	return processed_text_html
 
 def process_md(processed_text_html):
+	"""Processes html text and converts it to markdown, representing
+		as titles text originally large, so it reconstructs the 
+		title-content structure of the document.
+
+	Args:
+		processed_text_html (string): html text to be processed.
+
+	Returns:
+		string: markdown text once is processed.
+	"""
 	processed_text_md = ( pre_proc.extract_text_md(processed_text_html)
 														| p(pre_proc.replace_br)
 														| p(pre_proc.remove_false_titles)
@@ -62,6 +89,17 @@ def process_md(processed_text_html):
 	return processed_text_md
 
 def process(text, output_dir, file_name):
+	"""Processes a document in html format (originally a pdf) so
+		at the end it is converted to JSON, reconstructing the
+		semantic structure of the titles and its contents. This 
+		JSON document is stored in output_dir.
+
+	Args:
+		text (string): html that is going to be processed.
+		output_dir (string): path where the output files are
+			going to be stored.
+		file_name (string): name of the document.
+	"""
 	# Process HTML
 	processed_text_html = process_html(text)
 	# Write processed HTML output 
@@ -87,6 +125,16 @@ def process(text, output_dir, file_name):
 	
 
 def extract_and_process(input_dir, pdf_path):
+	"""Extracts a PDF document to HTML format, processing it so
+		at the end it is converted to JSON, reconstructing the
+		semantic structure of the titles and its contents. This 
+		JSON document is stored in output_dir.
+
+	Args:
+		input_dir (string): path of the directory where the
+			document is stored.
+		pdf_path (string): path where pdf document is stored.
+	"""
 	print('Extracting text from: ', pdf_path)
 	output_dir = input_dir + "/output"
 	try:
@@ -105,13 +153,17 @@ def extract_and_process(input_dir, pdf_path):
 
 
 def get_listPDF(input_dir):
-	'''
-	:return: Returns list of file paths inside input_dir
-	'''
+	"""Returns a list of paths. Each one is a file stored in
+		input_dir directory.
 
-	path_archivos = [input_dir +'/' + f for f in listdir(input_dir) if isfile(join(input_dir, f)) ]
+	Args:
+		input_dir (string): path of the directory.
 
-	return path_archivos
+	Returns:
+		[string]: list of paths.
+	"""
+	file_paths = [input_dir +'/' + f for f in listdir(input_dir) if isfile(join(input_dir, f)) ]
+	return file_paths
 
 
 def run_test():
