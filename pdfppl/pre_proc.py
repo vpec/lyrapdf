@@ -47,22 +47,6 @@ def split_spans(text):
 	processed_text = p1.sub(r'\1\n\2',text)
 	return processed_text
 
-def delete_misc(text):
-	"""Proccess html text deleting miscellaneous elements, keeping
-		only text spans
-
-	Args:
-		text (string): html text that is going to be processed
-
-	Returns:
-		string: text once it's processed
-	"""
-	p1 = re.compile(r'<span style="font-family:.*</span>', re.MULTILINE | re.UNICODE | re.DOTALL)
-	match_list = re.findall(p1, text)
-	processed_text = ""
-	for match in match_list:
-		processed_text += match + '\n'
-	return processed_text
 	
 def delete_dup_greater_than(text):
 	"""Proccess html text deleting duplicated '>' generated after
@@ -79,8 +63,17 @@ def delete_dup_greater_than(text):
 	return processed_text
 
 def delete_non_textual_elements(text):
-	p1 = re.compile(r'(<div style=)(.*?)(\n<span style=\"font-family)((.|\n)*?)(</span></div>)', re.MULTILINE | re.UNICODE)
-	match_list = re.findall(p1, text)
+	"""Proccess html text deleting miscellaneous elements, keeping
+		only text div containers
+
+	Args:
+		text (string): html text that is going to be processed
+
+	Returns:
+		string: text once it's processed
+	"""
+	text_div_regex = re.compile(r'(<div style=)(.*?)(\n<span style=\"font-family)((.|\n)*?)(</span></div>)', re.MULTILINE | re.UNICODE)
+	match_list = re.findall(text_div_regex, text)
 	processed_text = ""
 	for match in match_list:
 		#print(match)
@@ -89,13 +82,17 @@ def delete_non_textual_elements(text):
 	return processed_text2
 
 def get_page_bounds(text):
-	"""[summary]
+	"""Obtain bounds (in pixels) for each page in the document.
+		The top of the page is considered lower bound and the bottom
+		upper bound. The value is minimum at the beginning of the
+		document and maximum at its ending.
 
 	Args:
-		text ([type]): [description]
+		text (string): html text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		[(int, int)]: list of tuples containing lower bound and
+			upper bound for each page
 	"""
 	positions_regex = re.compile(r'<span style=\"position:absolute; border:.*?top:(.*?)px.*?height:(.*?)px.*?></span>\n<div style=\"position:absolute;.*?Page.*?</a></div>', re.UNICODE)
 	# Find all matchings
@@ -119,16 +116,19 @@ def get_page_bounds(text):
 	return bounds_list
 
 def is_header(bounds_list, position, font_size, i):
-	"""[summary]
+	"""Determines whether a piece of text is considered header or not
 
 	Args:
-		bounds_list ([type]): [description]
-		position ([type]): [description]
-		font_size ([type]): [description]
-		i ([type]): [description]
+		bounds_list ([(int, int)]): text position bounds for each page
+			in the document
+		position (int): pixel position of a piece of text
+		font_size (int): font size of a piece of text
+		i (int): number of page to look at in bounds_list
 
 	Returns:
-		[type]: [description]
+		(bool, int): a tuple containing a boolean that indicates if
+			the piece of text is a header or not, and an integer
+			that represents the document page where text is located
 	"""
 	if(font_size >= 18):
 		# If text is big, it isn't a header
@@ -160,14 +160,17 @@ def is_header(bounds_list, position, font_size, i):
 		return it_is_header, i
 
 def delete_headers(text, bounds_list):
-	"""[summary]
+	"""Remove pieces of text considered headers (text located at top or bottom
+		of a page), such as page numbers or other text repeated in every page
+		of the document
 
 	Args:
-		text ([type]): [description]
-		bounds_list ([type]): [description]
+		text (string): html text that is going to be processed
+		bounds_list ([(int, int)]): text position bounds for each page
+			in the document
 
 	Returns:
-		[type]: [description]
+		string: text once it's processed
 	"""
 	headers_regex = re.compile(r'(<div style=\"position:absolute; border:.*?top:(.*?)px.*?<span style=\"font-family:.*?font-size:(.*?)px.*?</div>)', re.UNICODE | re.DOTALL)
 	# Store processed text
@@ -188,13 +191,15 @@ def delete_headers(text, bounds_list):
 
 
 def delete_vertical_text(text):
-	"""[summary]
+	"""Removes from the html text that is considered vertical.
+		This is text that hasn't had a correct extraction from
+		the original document
 
 	Args:
-		text ([type]): [description]
+		text (string): html text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it's processed
 	"""
 	vertical_text_regex = re.compile(r'((<div style=\"position:absolute; border:.*?)\n(<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(.|\n)*?</div>)', re.UNICODE)
 	processed_text = vertical_text_regex.sub("", text)
@@ -202,13 +207,16 @@ def delete_vertical_text(text):
 
 
 def kmeans(font_size_list):
-	"""[summary]
+	"""Generate intervals for unidimensional dataset (list of font
+		sizes), selecting as number of intervals (clusters) the
+		minimum between 6 and the number of elements provided
 
 	Args:
-		font_size_list ([type]): [description]
+		font_size_list ([int]): list containing the data
 
 	Returns:
-		[type]: [description]
+		{int: int}: dictionary containing font sizes in argument's
+			list as keys, and title or heading level assigned as value
 	"""
 	# Check if font_size_list isn't empty
 	if(font_size_list == []):
@@ -229,13 +237,19 @@ def kmeans(font_size_list):
 
 
 def analyze_font_size(text):
-	"""[summary]
+	"""Analyzes font sizes in the document, calculating a font
+		size threshold for what it's supposed to be "standard"
+		text, a dictionary for indentifying each size larger than
+		that as title level, and what size is supposed to be the
+		maximum for a number to be considered a quote reference
 
 	Args:
-		text ([type]): [description]
+		text (string): html text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		int, {int: int}, float: a tuple containing the standard
+			text size threshold, the dictionary for title levels,
+			and the size threshold for quote reference numbers
 	"""
 	span_regex = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
 	# Find all matchings
@@ -301,13 +315,14 @@ def analyze_font_size(text):
 
 
 def sort_html(text):
-	"""[summary]
+	"""Sort div containers in a given html document by its top
+		defined position in pixels
 
 	Args:
-		text ([type]): [description]
+		text (string): html text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	div_container_regex = re.compile(r'(<div style=\"position:absolute; border:(?:.|\n)*?left:(.*?)px; top:(.*?)px(?:.|\n)*?height:(.*?)px(?:.|\n)*?<span style=\"font-family:(?:.|\n)*?font-size:(.*?)px(?:.|\n)*?</div>)', re.UNICODE)
 	# Find all regex matchings
@@ -353,13 +368,15 @@ def sort_html(text):
 
 
 def extract_text_md(text):
-	"""[summary]
+	"""Extract text from a html document and convert it to
+		MarkDown format, classifying standard and title text
+		based on its font size
 
 	Args:
-		text ([type]): [description]
+		text (string): html text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text in MarkDown format
 	"""
 	# Get font size analysis results
 	font_threshold, headings_dict, max_quote = analyze_font_size(text)
@@ -408,13 +425,15 @@ def extract_text_md(text):
 
 
 def replace_br(text):
-	"""[summary]
+	"""Replace <br> in text for a newline character if the line
+		is standard, and replacing it for a blank space if the line
+		is a title
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	line_regex = re.compile(r'^.*?$', re.UNICODE | re.MULTILINE)
 	title_line_regex = re.compile(r'^#+.*?$', re.UNICODE | re.MULTILINE)
@@ -435,26 +454,28 @@ def replace_br(text):
 	return processed_text
 
 def remove_blank_lines(text):
-	"""[summary]
+	"""Remove blank lines from the document
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	blank_line_regex = re.compile(r'^\s+$', re.UNICODE | re.MULTILINE)
 	processed_text = blank_line_regex.sub(r'', text)
 	return processed_text
 
 def replace_cid(text):
-	"""[summary]
+	"""Replace cid elements (a format to encode some characters
+		extracted by PDFMiner) for its unicode character equivalent
+		(not 100% accurate, specially in extended ASCII characters)
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	# Replace with dashes
 	cid_regex_1 = re.compile(r'(\(cid:(114|131)\) *)') 
@@ -481,10 +502,10 @@ def replace_with_dash(text):
 	"""[summary]
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	dash_regex = re.compile(r'(•|–|·|—|−|―|▪)')
 	text = dash_regex.sub(r'-',text)
