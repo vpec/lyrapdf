@@ -10,9 +10,26 @@ from multiprocessing import Process, Manager
 import PyPDF2
 
 def countRotated(text):
+    """Count the number of ocurrences of '\w\n' in text
+
+    Args:
+        text (string): text that is going to be processed
+
+    Returns:
+        int: number of ocurrences
+    """
     return len(re.findall(r'\w\n', text))
 
 def process_without_detect_vertical(interpreter, retstr, page, return_dict):
+    """Process page and return in shared variable the number of 
+        countRotated ocurrences
+
+    Args:
+        interpreter (PDFPageInterpreter): PDFPageInterpreter object
+        retstr (BytesIO): BytesIO object
+        page (PDFPage): PDFPage object
+        return_dict (Manager.dict()): Manager.dict() object
+    """
     t_start = time.process_time()
     interpreter.process_page(page)
     t_elapsed = time.process_time() - t_start
@@ -39,17 +56,21 @@ def convert_pdf_to_txt_pypdf2(path, output_dir, file_name, generate_output = Tru
     _file.close()
     return _text
 
+    
+def convert_pdf_to_txt(path, check_rotated = False):
+    """Extract text from PDF document to HTML format.
+        When check_rotated is True, pages are processed a second time
+        to ensure they are in the correct orientation. If not, the page
+        is rotated 90 degrees clockwise and processed again. This may slow
+        down the whole process more than a 100%.
 
-    
-def convert_pdf_to_txt(path, output_dir, file_name):
-    """ 
-        PDFMiner:                       https://pypi.org/project/pdfminer/ 
-            - Documentación:            https://media.readthedocs.org/pdf/pdfminer-docs/latest/pdfminer-docs.pdf 
-        :param path:    String que indica el path hacia el archivo
-        :return:        Extrae el texto contenido en un PDF a través del uso de
-                        PDFMiner y saca lo extraído al fichero salida_ExtraccionTexto
-        """
-    
+    Args:
+        path (string): path where pdf file is stored
+        check_rotated (bool, optional): check rotated pages. Defaults to False.
+
+    Returns:
+        string: document in html format
+    """
     # Declare PDFMiner variables for extraction (with detect_vertical ON)
     _rsrcmgr = PDFResourceManager()
     _retstr = BytesIO()
@@ -71,8 +92,6 @@ def convert_pdf_to_txt(path, output_dir, file_name):
 
     # Variable where text is going to be stored
     _text = b""
-
-    check_rotated = False
 
     # Iterate through PDF document pages
     for number,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
