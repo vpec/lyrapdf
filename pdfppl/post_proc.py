@@ -1,13 +1,20 @@
 import json
-import yaml
 import re
-import pdfppl.dialogflow_adapter as df
 import pdfppl.snips_nlu_adapter as snips
 from os.path import exists
 from os import makedirs
 
 
 def get_standard_text(content_list):
+	"""Retrieves all standard text contained in the list of
+		nodes provided and their children.
+
+	Args:
+		content_list ([{node}]): list of dictionary nodes
+
+	Returns:
+		[string]: list of text lines retrieved
+	"""
 	text_list = []
 	for node in content_list:
 		if(node["level"] == 7):
@@ -20,6 +27,18 @@ def get_standard_text(content_list):
 
 
 def text_under_title_recursive(content_list, title):
+	"""Retrieves standard text contained in the child nodes
+		of the first node in list of nodes and their children
+		which text is exactly the one stored in title variable
+		and it's also a title node. In-depth search is used.
+
+	Args:
+		content_list ([{node}]): list of dictionary nodes
+		title ([type]): text to be matched
+
+	Returns:
+		[string]: list of text lines retrieved
+	"""
 	title_regex = re.compile(r'^' + f'{re.escape(title)}' + r'$', re.MULTILINE | re.UNICODE)
 	for node in content_list:
 		if(node["level"] != 7 and title_regex.search(node["text"])):
@@ -36,6 +55,18 @@ def text_under_title_recursive(content_list, title):
 
 
 def text_under_title(doc_json, title):
+	"""Retrieves standard text contained in the child nodes
+		of the first node in document dictionary which text is
+		exactly the one stored in title variable and it's also a
+		title node. In-depth search is used.
+
+	Args:
+		doc_json (dictionary): json document as a Python dictionary
+		title (string): text to be matched
+
+	Returns:
+		[string]: list of text lines retrieved
+	"""
 	root_content_list = doc_json["content"]
 	return text_under_title_recursive(root_content_list, title)
 
@@ -90,6 +121,15 @@ def get_next_paragraph(doc_json, text):
 		return None
 
 def get_questions_recursive(content_list):
+	"""Retrieves question titles in a list of nodes and their children.
+		Questions must be in spanish format (¿blah blah blah?).
+
+	Args:
+		content_list ([{node}]): list of dictionary nodes
+
+	Returns:
+		[string]: list of questions retrieved
+	"""
 	questions_list = []
 	question_regex = re.compile(r'^.*?¿.*?\?.*$', re.MULTILINE | re.UNICODE)
 	for node in content_list:
@@ -101,12 +141,33 @@ def get_questions_recursive(content_list):
 	return questions_list
 
 def get_questions(doc_json):
+	"""Retrieves titles in document that contain a question in
+		spanish format (¿blah blah blah?)
+
+	Args:
+		doc_json (dictionary): json document as a Python dictionary
+
+	Returns:
+		[string]: list of questions retrieved
+	"""
 	root_content_list = doc_json["content"]
 	questions_list = get_questions_recursive(root_content_list)
 	return questions_list
 
 
-def feed_chatbot(json_bytes, dataset_dir, project_id = "PROJECT_ID"):
+def feed_chatbot(json_bytes, dataset_dir):
+	"""Finds document titles that are questions in spanish
+		format (¿blah blah blah?) and creates a intent representing
+		the document, where the training phrases are the questions
+		themselves. It also creates an intent for each question
+		(unique utterance), storing in a txt file the text content
+		below the title	as a response for the question.
+
+	Args:
+		json_bytes (bytes): json document binary
+		dataset_dir (string): path where intents are going
+			to be stored
+	"""
 	doc_json = json.loads(json_bytes)
 	#message_texts = ["Te recomiendo este documento " + doc_json["document"]]
 	#text_list = text_under_title(doc_json, "Preguntas para responder")
