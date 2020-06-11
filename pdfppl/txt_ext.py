@@ -10,10 +10,10 @@ from multiprocessing import Process, Manager
 import PyPDF2
 
 def countRotated(text):
-    """Count the number of ocurrences of '\w\n' in text
+    """Counts the number of ocurrences of '\w\n' in text.
 
     Args:
-        text (string): text that is going to be processed
+        text (string): text that is going to be processed.
 
     Returns:
         int: number of ocurrences
@@ -21,14 +21,14 @@ def countRotated(text):
     return len(re.findall(r'\w\n', text))
 
 def process_without_detect_vertical(interpreter, retstr, page, return_dict):
-    """Process page and return in shared variable the number of 
-        countRotated ocurrences
+    """Processes page and return in shared variable the number of 
+        countRotated ocurrences.
 
     Args:
-        interpreter (PDFPageInterpreter): PDFPageInterpreter object
-        retstr (BytesIO): BytesIO object
-        page (PDFPage): PDFPage object
-        return_dict (Manager.dict()): Manager.dict() object
+        interpreter (PDFPageInterpreter): PDFPageInterpreter object.
+        retstr (BytesIO): BytesIO object.
+        page (PDFPage): PDFPage object.
+        return_dict (Manager.dict()): Manager.dict() object.
     """
     t_start = time.process_time()
     interpreter.process_page(page)
@@ -57,8 +57,8 @@ def convert_pdf_to_txt_pypdf2(path, output_dir, file_name, generate_output = Tru
     return _text
 
     
-def convert_pdf_to_txt(path, check_rotated = False):
-    """Extract text from PDF document to HTML format.
+def extract_pdf_to_html(path, check_rotated = False):
+    """Extracts text from PDF document to HTML format.
         When check_rotated is True, pages are processed a second time
         to ensure they are in the correct orientation. If not, the page
         is rotated 90 degrees clockwise and processed again. This may slow

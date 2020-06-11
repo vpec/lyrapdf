@@ -10,11 +10,11 @@ from pdfppl.ckmeans import ckmeans
 #################################################################
 
 def create_binary_file(path, text):
-	"""Creates a binary file given a path and text in bytes format
+	"""Creates a binary file given a path and text in bytes format.
 
 	Args:
-		path (string): path where file is going to be stored
-		text (bytes): text to be stored in file
+		path (string): path where file is going to be stored.
+		text (bytes): text to be stored in file.
 	"""
 	file = open(path,'wb+')
 	file.write(text)
@@ -23,11 +23,11 @@ def create_binary_file(path, text):
 
 
 def create_text_file(path, text):
-	"""Creates a text file given a path and text in string format
+	"""Creates a text file given a path and text in string format.
 
 	Args:
-		path (string): path where file is going to be stored
-		text (string): text to be stored in file
+		path (string): path where file is going to be stored.
+		text (string): text to be stored in file.
 	"""
 	file = open(path,'w+')
 	file.write(text)
@@ -42,13 +42,13 @@ def create_text_file(path, text):
 #################################################################
 
 def split_spans(text):
-	"""Process html text splitting spans by a newline character
+	"""Processes html text splitting spans by a newline character.
 
 	Args:
-		text (string): html text that is going to be processed
+		text (string): html text that is going to be processed.
 
 	Returns:
-		string: text once it's processed
+		string: text once it's processed.
 	"""
 	p1 = re.compile(r'(>)(<span)', re.MULTILINE | re.UNICODE)
 	processed_text = p1.sub(r'\1\n\2',text)
@@ -56,28 +56,28 @@ def split_spans(text):
 
 	
 def delete_dup_greater_than(text):
-	"""Proccess html text deleting duplicated '>' generated after
-		previous processing steps
+	"""Processes html text deleting duplicated '>' generated after
+		previous processing steps.
 
 	Args:
-		text (string): html text that is going to be processed
+		text (string): html text that is going to be processed.
 
 	Returns:
-		string: text once it's processed
+		string: text once it's processed.
 	"""
 	p1 = re.compile(r'(<br>)(>)(</)', re.UNICODE)
 	processed_text = p1.sub(r'\1\3',text)
 	return processed_text
 
 def delete_non_textual_elements(text):
-	"""Proccess html text deleting miscellaneous elements, keeping
-		only text div containers
+	"""Processes html text deleting miscellaneous elements, keeping
+		only text div containers.
 
 	Args:
-		text (string): html text that is going to be processed
+		text (string): html text that is going to be processed.
 
 	Returns:
-		string: text once it's processed
+		string: text once it's processed.
 	"""
 	text_div_regex = re.compile(r'(<div style=)(.*?)(\n<span style=\"font-family)((.|\n)*?)(</span></div>)', re.MULTILINE | re.UNICODE)
 	match_list = re.findall(text_div_regex, text)
@@ -89,17 +89,17 @@ def delete_non_textual_elements(text):
 	return processed_text2
 
 def get_page_bounds(text):
-	"""Obtain bounds (in pixels) for each page in the document.
+	"""Obtains bounds (in pixels) for each page in the document.
 		The top of the page is considered lower bound and the bottom
 		upper bound. The value is minimum at the beginning of the
 		document and maximum at its end.
 
 	Args:
-		text (string): html text that is going to be processed
+		text (string): html text that is going to be processed.
 
 	Returns:
 		[(int, int)]: list of tuples containing lower bound and
-			upper bound for each page
+			upper bound for each page.
 	"""
 	positions_regex = re.compile(r'<span style=\"position:absolute; border:.*?top:(.*?)px.*?height:(.*?)px.*?></span>\n<div style=\"position:absolute;.*?Page.*?</a></div>', re.UNICODE)
 	# Find all matchings
@@ -123,19 +123,19 @@ def get_page_bounds(text):
 	return bounds_list
 
 def is_header(bounds_list, position, font_size, i):
-	"""Determines whether a piece of text is considered header or not
+	"""Determines whether a piece of text is considered header or not.
 
 	Args:
 		bounds_list ([(int, int)]): text position bounds for each page
-			in the document
-		position (int): pixel position of a piece of text
-		font_size (int): font size of a piece of text
-		i (int): number of page to look at in bounds_list
+			in the document.
+		position (int): pixel position of a piece of text.
+		font_size (int): font size of a piece of text.
+		i (int): number of page to look at in bounds_list.
 
 	Returns:
 		(bool, int): a tuple containing a boolean that indicates if
 			the piece of text is a header or not, and an integer
-			that represents the document page where text is located
+			that represents the document page where text is located.
 	"""
 	if(font_size >= 18):
 		# If text is big, it isn't a header
@@ -167,17 +167,17 @@ def is_header(bounds_list, position, font_size, i):
 		return it_is_header, i
 
 def delete_headers(text, bounds_list):
-	"""Remove pieces of text considered headers (text located at top or bottom
+	"""Removes pieces of text considered headers (text located at top or bottom
 		of a page), such as page numbers or other text repeated in every page
-		of the document
+		of the document.
 
 	Args:
-		text (string): html text that is going to be processed
+		text (string): html text that is going to be processed.
 		bounds_list ([(int, int)]): text position bounds for each page
-			in the document
+			in the document.
 
 	Returns:
-		string: text once it's processed
+		string: text once it's processed.
 	"""
 	headers_regex = re.compile(r'(<div style=\"position:absolute; border:.*?top:(.*?)px.*?<span style=\"font-family:.*?font-size:(.*?)px.*?</div>)', re.UNICODE | re.DOTALL)
 	# Store processed text
@@ -199,13 +199,13 @@ def delete_headers(text, bounds_list):
 def delete_vertical_text(text):
 	"""Removes from the html text that is considered vertical.
 		This is text that hasn't had a correct extraction from
-		the original document
+		the original document.
 
 	Args:
-		text (string): html text that is going to be processed
+		text (string): html text that is going to be processed.
 
 	Returns:
-		string: text once it's processed
+		string: text once it's processed.
 	"""
 	vertical_text_regex = re.compile(r'((<div style=\"position:absolute; border:.*?)\n(<span style=\"font-family:.*?>.{1,5}</span>\n){5,}?(.|\n)*?</div>)', re.UNICODE)
 	processed_text = vertical_text_regex.sub("", text)
@@ -213,16 +213,16 @@ def delete_vertical_text(text):
 
 
 def kmeans(font_size_list):
-	"""Generate intervals for unidimensional dataset (list of font
+	"""Generates intervals for unidimensional dataset (list of font
 		sizes), selecting as number of intervals (clusters) the
-		minimum between 6 and the number of elements provided
+		minimum between 6 and the number of elements provided.
 
 	Args:
-		font_size_list ([int]): list containing the data
+		font_size_list ([int]): list containing the data.
 
 	Returns:
 		{int: int}: dictionary containing font sizes in argument's
-			list as keys, and title or heading level assigned as value
+			list as keys, and title or heading level assigned as value.
 	"""
 	# Check if font_size_list isn't empty
 	if(font_size_list == []):
@@ -247,15 +247,15 @@ def analyze_font_size(text):
 		size threshold for what it's supposed to be "standard"
 		text, a dictionary for indentifying each size larger than
 		that as title level, and what size is supposed to be the
-		maximum for a number to be considered a quote reference
+		maximum for a number to be considered a quote reference.
 
 	Args:
-		text (string): html text that is going to be processed
+		text (string): html text that is going to be processed.
 
 	Returns:
 		int, {int: int}, float: a tuple containing the standard
 			text size threshold, the dictionary for title levels,
-			and the size threshold for quote reference numbers
+			and the size threshold for quote reference numbers.
 	"""
 	span_regex = re.compile(r'<span style=\"font-family: (.*?); font-size:(.*?)px\">((?:.|\n)*?)</span>', re.UNICODE)
 	# Find all matchings
@@ -321,14 +321,14 @@ def analyze_font_size(text):
 
 
 def sort_html(text):
-	"""Sort div containers in a given html document by its top
-		defined position in pixels
+	"""Sorts div containers in a given html document by its top
+		defined position in pixels.
 
 	Args:
-		text (string): html text that is going to be processed
+		text (string): html text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	div_container_regex = re.compile(r'(<div style=\"position:absolute; border:(?:.|\n)*?left:(.*?)px; top:(.*?)px(?:.|\n)*?height:(.*?)px(?:.|\n)*?<span style=\"font-family:(?:.|\n)*?font-size:(.*?)px(?:.|\n)*?</div>)', re.UNICODE)
 	# Find all regex matchings
@@ -374,15 +374,15 @@ def sort_html(text):
 
 
 def extract_text_md(text):
-	"""Extract text from a html document and convert it to
+	"""Extracts text from a html document and convert it to
 		MarkDown format, classifying standard and title text
-		based on its font size
+		based on its font size.
 
 	Args:
-		text (string): html text that is going to be processed
+		text (string): html text that is going to be processed.
 
 	Returns:
-		string: text in MarkDown format
+		string: text in MarkDown format.
 	"""
 	# Get font size analysis results
 	font_threshold, headings_dict, max_quote = analyze_font_size(text)
@@ -437,15 +437,15 @@ def extract_text_md(text):
 #################################################################
 
 def replace_br(text):
-	"""Replace <br> in text for a newline character if the line
+	"""Replaces <br> in text for a newline character if the line
 		is standard, and replacing it for a blank space if the line
-		is a title
+		is a title.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	line_regex = re.compile(r'^.*?$', re.UNICODE | re.MULTILINE)
 	title_line_regex = re.compile(r'^#+.*?$', re.UNICODE | re.MULTILINE)
@@ -466,28 +466,28 @@ def replace_br(text):
 	return processed_text
 
 def remove_blank_lines(text):
-	"""Remove blank lines from the document
+	"""Removes blank lines from the document.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	blank_line_regex = re.compile(r'^\s+$', re.UNICODE | re.MULTILINE)
 	processed_text = blank_line_regex.sub(r'', text)
 	return processed_text
 
 def replace_cid(text):
-	"""Replace cid elements (a format to encode some characters
+	"""Replaces cid elements (a format to encode some characters
 		extracted by PDFMiner) for its unicode character equivalent
-		(not 100% accurate, specially in extended ASCII characters)
+		(not 100% accurate, specially in extended ASCII characters).
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	# Replace with dashes
 	cid_regex_1 = re.compile(r'(\(cid:(114|131)\) *)') 
@@ -511,13 +511,13 @@ def replace_cid(text):
 	return text
 
 def replace_with_dash(text):
-	"""Replace a set of symbols with '-' in provided text
+	"""Replaces a set of symbols with '-' in provided text.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	dash_regex = re.compile(r'(•|–|·|—|−|―|▪)')
 	text = dash_regex.sub(r'-',text)
@@ -526,14 +526,14 @@ def replace_with_dash(text):
 
 
 def join_lines(text):
-	"""Process text so lines that are part of the same
-		semantic paragraph are merged into a single line
+	"""Processes text so lines that are part of the same
+		semantic paragraph are merged into a single line.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	processed_text = ""
 	line_regex = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
@@ -567,14 +567,14 @@ def join_lines(text):
 	
 
 def join_by_hyphen(text):
-	"""Join lines that are separated by hyphen, so the
-		word in between in reconstructed
+	"""Joins lines that are separated by hyphen, so the word
+		in between in reconstructed.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	hyphen_regex = re.compile(r'(\w) *(?:-|\u00AD) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
 	# Execute first hyphen union processing
@@ -602,14 +602,14 @@ def join_by_hyphen(text):
 	return processed_text2
 
 def remove_duplicated_whitespaces(text):
-	"""Remove duplicated whitespaces in the text, and also
-		remove whitespace at the beginning and end of lines
+	"""Removes duplicated whitespaces in the text, and also
+		remove whitespace at the beginning and end of lines.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	tab_regex = re.compile(r'\t+', re.MULTILINE | re.UNICODE)
 	blank_space_regex = re.compile(r' +', re.MULTILINE | re.UNICODE)
@@ -622,70 +622,70 @@ def remove_duplicated_whitespaces(text):
 	return processed_text
 	
 def join_et_al(text):
-	"""Join lines in text separated because of the dot in 'et al.'
-		when it's located at the end of a line
+	"""Joins lines in text separated because of the dot in 'et al.'
+		when it's located at the end of a line.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	et_al_regex = re.compile(r'(et +al *\.) *\n+ *(.)', re.UNICODE)
 	processed_text = et_al_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def join_beta(text):
-	"""Join lines in text separated by character beta when it's
-		located at the end of a line
+	"""Joins lines in text separated by character beta when it's
+		located at the end of a line.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	beta_regex = re.compile(r'(β) *\n+ *(-)', re.UNICODE)
 	processed_text = beta_regex.sub(r'\1\2', text)
 	return processed_text
 
 def join_vs(text):
-	"""Join lines in text separated because of the dot in 'vs.'
-		when it's located at the end of a line
+	"""Joins lines in text separated because of the dot in 'vs.'
+		when it's located at the end of a line.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	vs_regex = re.compile(r'(vs) *\. *\n+ *(.)', re.UNICODE)
 	processed_text = vs_regex.sub(r'\1. \2', text)
 	return processed_text
 
 def fix_enye(text):
-	"""Reconstruct 'ñ' character if it's broken
+	"""Reconstructs 'ñ' character if it's broken.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	enye_regex = re.compile(r'˜ *n', re.UNICODE)
 	processed_text = enye_regex.sub(r'ñ', text)
 	return processed_text
 
 def join_ellipsis(text):
-	"""Merge lines that are separated by ellipsis located at the
+	"""Merges lines that are separated by ellipsis located at the
 		end of a line, when its continuation is supposed to be part
-		of the same paragraph
+		of the same paragraph.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	title_ellipsis_regex = re.compile(r'^(#+.*\.\.\.) *\n+#+ *([a-zA-Z])', re.MULTILINE | re.UNICODE)
 	ellipsis_regex = re.compile(r'(\.\.\.) *\n+ *([a-z])', re.UNICODE)
@@ -694,55 +694,55 @@ def join_ellipsis(text):
 	return processed_text
 	
 def join_subtraction(text):
-	"""Merge lines that are separated because of a line starting with
-		dash, when it's actually a subtraction
+	"""Merges lines that are separated because of a line starting with
+		dash, when it's actually a subtraction.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	subtraction_regex = re.compile(r'(\d) *\n+ *(- *\d)', re.UNICODE)
 	processed_text = subtraction_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def fix_marks(text):
-	"""Remove incorrect whitespaces between some words and
-		punctuation marks
+	"""Removes incorrect whitespaces between some words and
+		punctuation marks.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	marks_regex = re.compile(r'(\w|\)) *(\.|,|:|;)', re.UNICODE)
 	processed_text = marks_regex.sub(r'\1\2', text)
 	return processed_text
 
 def remove_false_titles(text):
-	"""Remove title lines that don't contain any word
+	"""Removes title lines that don't contain any word.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	false_title_regex = re.compile(r'^#+ *([^\-\w¿\?\n]*)$', re.MULTILINE | re.UNICODE)
 	processed_text = false_title_regex.sub(r'\1', text)
 	return processed_text
 
 def join_by_colon(text):
-	"""Merge lines separated by a colon at the end of a line when
-		the next one starts with lower case
+	"""Merges lines separated by a colon at the end of a line when
+		the next one starts with lower case.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	colon_separated_regex = re.compile(r'(:) *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
 	processed_text = colon_separated_regex.sub(r'\1 \2', text)
@@ -751,17 +751,17 @@ def join_by_colon(text):
 def join_title_questions(text):
 	"""In some documents, a single title can be composed by words with
 		different font sizes, so it can be separated in multiple lines with
-		distinct title level. This functions merge that lines into a single
+		distinct title level. This function merges that lines into a single
 		line when the title is a question, because it can easily be detected
 		(at least in spanish) due to '¿' and '?' symbols. The resulting
 		title level is the highest (less significant) of the levels that were
-		composing the question
+		composing the question.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	line_regex = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
 	line_list = re.findall(line_regex, text)
@@ -803,26 +803,26 @@ def join_title_questions(text):
 	return processed_text
 
 def remove_duplicated_dashes(text):
-	"""Remove duplicated consecutive dashes from text
+	"""Removes duplicated consecutive dashes from text.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	dup_dashes_regex = re.compile(r'^ *(- +)+', re.MULTILINE | re.UNICODE)
 	processed_text = dup_dashes_regex.sub(r'- ', text)
 	return processed_text
 
 def remove_useless_lines(text):
-	"""Remove lines that don't contain a word nor a number
+	"""Removes lines that don't contain a word nor a number.
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	# Useless lines
 	useless_line_regex = re.compile(r'^[^\w\n]*$', re.MULTILINE | re.UNICODE)
@@ -830,14 +830,14 @@ def remove_useless_lines(text):
 	return processed_text
 
 def remove_repeated_strings(text):
-	"""Remove strings that are identical and consecutive (repeated
-		more than 3 times)
+	"""Removes strings that are identical and consecutive (repeated
+		more than 3 times).
 
 	Args:
-		text (string): markdown text that is going to be processed
+		text (string): markdown text that is going to be processed.
 
 	Returns:
-		string: text once it is processed
+		string: text once it is processed.
 	"""
 	# Repeated strings
 	repeated_strings_regex = re.compile(r'([^#IVX0\n]{1,4}?)(\1){3,}', re.UNICODE)
@@ -846,7 +846,7 @@ def remove_repeated_strings(text):
 
 
 def convert_md_to_json(text, name):
-	"""Convert markdown text to JSON, creating a dictionary where its
+	"""Converts markdown text to JSON, creating a dictionary where its
 		root is:
 		
 		{
@@ -872,11 +872,11 @@ def convert_md_to_json(text, name):
 
 
 	Args:
-		text (string): markdown text that is going to be processed
-		name (string): name of the document
+		text (string): markdown text that is going to be processed.
+		name (string): name of the document.
 
 	Returns:
-		bytes: document JSON binary
+		bytes: document JSON binary.
 	"""
 	line_regex = re.compile(r'^.+$', re.MULTILINE | re.UNICODE)
 	title_regex = re.compile(r'^(#+) *(.*)$', re.MULTILINE | re.UNICODE)

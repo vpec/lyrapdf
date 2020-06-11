@@ -91,7 +91,7 @@ def extract_and_process(input_dir, pdf_path):
 	output_dir = input_dir + "/output"
 	try:
 		# Extract PDF to HTML format
-		extracted_text = txt_ext.convert_pdf_to_txt(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+		extracted_text = txt_ext.extract_pdf_to_html(pdf_path, input_dir + "/output", path_leaf(pdf_path))
 		# Write raw HTML
 		pre_proc.create_text_file(output_dir + "/raw_" + path_leaf(pdf_path) + "_post.html", extracted_text)
 		
