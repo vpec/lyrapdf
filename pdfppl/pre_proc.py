@@ -3,7 +3,11 @@ import json
 import matplotlib.pylab as plt
 from pdfppl.ckmeans import ckmeans
 
-
+#################################################################
+#
+#					CREATE FILES
+#
+#################################################################
 
 def create_binary_file(path, text):
 	"""Creates a binary file given a path and text in bytes format
@@ -31,8 +35,11 @@ def create_text_file(path, text):
 
 
 
-
-##########################################################################################
+#################################################################
+#
+#					HTML PROCESSING
+#
+#################################################################
 
 def split_spans(text):
 	"""Process html text splitting spans by a newline character
@@ -85,7 +92,7 @@ def get_page_bounds(text):
 	"""Obtain bounds (in pixels) for each page in the document.
 		The top of the page is considered lower bound and the bottom
 		upper bound. The value is minimum at the beginning of the
-		document and maximum at its ending.
+		document and maximum at its end.
 
 	Args:
 		text (string): html text that is going to be processed
@@ -178,7 +185,6 @@ def delete_headers(text, bounds_list):
 	match_list = re.findall(headers_regex, text)
 	i = 0 # variable for iterating bounds list
 	for match in match_list:
-		#print(match)
 		matched = match[0]
 		position = int(match[1])
 		font_size = int(match[2])
@@ -272,7 +278,7 @@ def analyze_font_size(text):
 		data += [font_size] * matched_text_len
 
 	# Plot data
-	plt.hist(data)
+	#plt.hist(data)
 	#plt.show()
 
 	# Delete font size 0 if it exists in dictionary
@@ -424,6 +430,12 @@ def extract_text_md(text):
 	return processed_text
 
 
+#################################################################
+#
+#					MARKDOWN PROCESSING
+#
+#################################################################
+
 def replace_br(text):
 	"""Replace <br> in text for a newline character if the line
 		is standard, and replacing it for a blank space if the line
@@ -499,7 +511,7 @@ def replace_cid(text):
 	return text
 
 def replace_with_dash(text):
-	"""[summary]
+	"""Replace a set of symbols with '-' in provided text
 
 	Args:
 		text (string): markdown text that is going to be processed
@@ -514,13 +526,14 @@ def replace_with_dash(text):
 
 
 def join_lines(text):
-	"""[summary]
+	"""Process text so lines that are part of the same
+		semantic paragraph are merged into a single line
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	processed_text = ""
 	line_regex = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
@@ -554,13 +567,14 @@ def join_lines(text):
 	
 
 def join_by_hyphen(text):
-	"""[summary]
+	"""Join lines that are separated by hyphen, so the
+		word in between in reconstructed
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	hyphen_regex = re.compile(r'(\w) *(?:-|\u00AD) *\n+ *(\w)', re.MULTILINE | re.UNICODE)
 	# Execute first hyphen union processing
@@ -588,13 +602,14 @@ def join_by_hyphen(text):
 	return processed_text2
 
 def remove_duplicated_whitespaces(text):
-	"""[summary]
+	"""Remove duplicated whitespaces in the text, and also
+		remove whitespace at the beginning and end of lines
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	tab_regex = re.compile(r'\t+', re.MULTILINE | re.UNICODE)
 	blank_space_regex = re.compile(r' +', re.MULTILINE | re.UNICODE)
@@ -607,65 +622,70 @@ def remove_duplicated_whitespaces(text):
 	return processed_text
 	
 def join_et_al(text):
-	"""[summary]
+	"""Join lines in text separated because of the dot in 'et al.'
+		when it's located at the end of a line
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	et_al_regex = re.compile(r'(et +al *\.) *\n+ *(.)', re.UNICODE)
 	processed_text = et_al_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def join_beta(text):
-	"""[summary]
+	"""Join lines in text separated by character beta when it's
+		located at the end of a line
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	beta_regex = re.compile(r'(β) *\n+ *(-)', re.UNICODE)
 	processed_text = beta_regex.sub(r'\1\2', text)
 	return processed_text
 
 def join_vs(text):
-	"""[summary]
+	"""Join lines in text separated because of the dot in 'vs.'
+		when it's located at the end of a line
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	vs_regex = re.compile(r'(vs) *\. *\n+ *(.)', re.UNICODE)
 	processed_text = vs_regex.sub(r'\1. \2', text)
 	return processed_text
 
 def fix_enye(text):
-	"""[summary]
+	"""Reconstruct 'ñ' character if it's broken
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	enye_regex = re.compile(r'˜ *n', re.UNICODE)
 	processed_text = enye_regex.sub(r'ñ', text)
 	return processed_text
 
 def join_ellipsis(text):
-	"""[summary]
+	"""Merge lines that are separated by ellipsis located at the
+		end of a line, when its continuation is supposed to be part
+		of the same paragraph
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	title_ellipsis_regex = re.compile(r'^(#+.*\.\.\.) *\n+#+ *([a-zA-Z])', re.MULTILINE | re.UNICODE)
 	ellipsis_regex = re.compile(r'(\.\.\.) *\n+ *([a-z])', re.UNICODE)
@@ -674,65 +694,74 @@ def join_ellipsis(text):
 	return processed_text
 	
 def join_subtraction(text):
-	"""[summary]
+	"""Merge lines that are separated because of a line starting with
+		dash, when it's actually a subtraction
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	subtraction_regex = re.compile(r'(\d) *\n+ *(- *\d)', re.UNICODE)
 	processed_text = subtraction_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def fix_marks(text):
-	"""[summary]
+	"""Remove incorrect whitespaces between some words and
+		punctuation marks
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	marks_regex = re.compile(r'(\w|\)) *(\.|,|:|;)', re.UNICODE)
 	processed_text = marks_regex.sub(r'\1\2', text)
 	return processed_text
 
 def remove_false_titles(text):
-	"""[summary]
+	"""Remove title lines that don't contain any word
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	false_title_regex = re.compile(r'^#+ *([^\-\w¿\?\n]*)$', re.MULTILINE | re.UNICODE)
 	processed_text = false_title_regex.sub(r'\1', text)
 	return processed_text
 
 def join_by_colon(text):
-	"""[summary]
+	"""Merge lines separated by a colon at the end of a line when
+		the next one starts with lower case
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	colon_separated_regex = re.compile(r'(:) *\n+ *([a-z])', re.MULTILINE | re.UNICODE)
 	processed_text = colon_separated_regex.sub(r'\1 \2', text)
 	return processed_text
 
 def join_title_questions(text):
-	"""[summary]
+	"""In some documents, a single title can be composed by words with
+		different font sizes, so it can be separated in multiple lines with
+		distinct title level. This functions merge that lines into a single
+		line when the title is a question, because it can easily be detected
+		(at least in spanish) due to '¿' and '?' symbols. The resulting
+		title level is the highest (less significant) of the levels that were
+		composing the question
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	line_regex = re.compile(r'^.*$', re.MULTILINE | re.UNICODE)
 	line_list = re.findall(line_regex, text)
@@ -774,26 +803,26 @@ def join_title_questions(text):
 	return processed_text
 
 def remove_duplicated_dashes(text):
-	"""[summary]
+	"""Remove duplicated consecutive dashes from text
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	dup_dashes_regex = re.compile(r'^ *(- +)+', re.MULTILINE | re.UNICODE)
 	processed_text = dup_dashes_regex.sub(r'- ', text)
 	return processed_text
 
 def remove_useless_lines(text):
-	"""[summary]
+	"""Remove lines that don't contain a word nor a number
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	# Useless lines
 	useless_line_regex = re.compile(r'^[^\w\n]*$', re.MULTILINE | re.UNICODE)
@@ -801,13 +830,14 @@ def remove_useless_lines(text):
 	return processed_text
 
 def remove_repeated_strings(text):
-	"""[summary]
+	"""Remove strings that are identical and consecutive (repeated
+		more than 3 times)
 
 	Args:
-		text ([type]): [description]
+		text (string): markdown text that is going to be processed
 
 	Returns:
-		[type]: [description]
+		string: text once it is processed
 	"""
 	# Repeated strings
 	repeated_strings_regex = re.compile(r'([^#IVX0\n]{1,4}?)(\1){3,}', re.UNICODE)
@@ -816,14 +846,37 @@ def remove_repeated_strings(text):
 
 
 def convert_md_to_json(text, name):
-	"""[summary]
+	"""Convert markdown text to JSON, creating a dictionary where its
+		root is:
+		
+		{
+			"document" : document_name
+			"level": 0
+			"content" : []
+		}
+
+		content contains a list where each node has a lower level than
+		any of its children. A node might not have any children. If it
+		has, they are contained in a list in "content". A node is composed
+		like this:
+
+		{
+			"text": text_of_the_node
+			"level": X
+			"content": [] # Optional
+		}
+
+		Levels go from 0 to 7, where 0 is document root node, 7 is
+		standard text, and 1 to 6 are title levels, being 1 the most significant
+		and 6 the least.
+
 
 	Args:
-		text ([type]): [description]
-		name ([type]): [description]
+		text (string): markdown text that is going to be processed
+		name (string): name of the document
 
 	Returns:
-		[type]: [description]
+		bytes: document JSON binary
 	"""
 	line_regex = re.compile(r'^.+$', re.MULTILINE | re.UNICODE)
 	title_regex = re.compile(r'^(#+) *(.*)$', re.MULTILINE | re.UNICODE)
