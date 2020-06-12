@@ -16,7 +16,7 @@ from pdfminer.pdfdocument import PDFTextExtractionNotAllowed
 from multiprocessing import Process, Lock, cpu_count
 from multiprocessing import Pool
 import time
-from random import randint
+import argparse
 
 
 def path_leaf(path):
@@ -139,7 +139,7 @@ def extract_and_process(input_dir, pdf_path):
 	output_dir = input_dir + "/output"
 	try:
 		# Extract PDF to HTML format
-		extracted_text = txt_ext.extract_pdf_to_html(pdf_path, input_dir + "/output", path_leaf(pdf_path))
+		extracted_text = txt_ext.extract_pdf_to_html(pdf_path)
 		# Write raw HTML
 		pre_proc.create_text_file(output_dir + "/raw_" + path_leaf(pdf_path) + "_post.html", extracted_text)
 		
@@ -191,38 +191,42 @@ def run_chatbot():
 			post_proc.feed_chatbot(json_doc, dataset_dir)
 
 def run():
-	if(len(sys.argv) == 2):
-		# Get directory where are stored pdfs to be processed
-		input_dir = abspath(sys.argv[1])
-		# Get list of pdf from input directory
-		pdf_list = get_listPDF(input_dir)
-		# Define ouptut directory
-		output_dir = input_dir + "/output"
-		# Create output directory if it doesn't exist
-		if not exists(output_dir):
-			makedirs(output_dir)
-		# Define chatbot directory
-		chatbot_dir = "chatbot"
-		# Create chatbot directory if it doesn't exist
-		if not exists(chatbot_dir):
-			makedirs(chatbot_dir)
-		# Create function arguments for multithreading
-		function_args = []
-		for pdf in pdf_list:
-			function_args.append((input_dir, pdf))
-		# Multithreading
-		print("Number of CPU:", cpu_count())
-		# Initialize multithreading pool
-		p = Pool(cpu_count())
-		with p:
-			# Execute function in multiprocess mode
-  			p.starmap(extract_and_process, function_args)
-	
-		"""
-		for pdf_path in pdf_list:
-			extract_and_process(input_dir, pdf_path)
-		"""
-		
-	
-	else:
-		print("Invalid number of arguments")
+	parser = argparse.ArgumentParser(description='Extract text from a PDF and convert to JSON, preserving its structure.')
+	parser.add_argument('path', metavar='path', type=str,
+                    help='the path to PDF file or directory')
+	parser.add_argument('--threads', metavar='threads', type=int, default=1,
+                    help='number of threads used for processing')
+	args = parser.parse_args()
+
+	# Get directory where are stored pdfs to be processed
+	input_dir = abspath(args.path)
+	# Get list of pdf from input directory
+	pdf_list = get_listPDF(input_dir)
+	# Define ouptut directory
+	output_dir = input_dir + "/output"
+	# Create output directory if it doesn't exist
+	if not exists(output_dir):
+		makedirs(output_dir)
+	# Define chatbot directory
+	chatbot_dir = "chatbot"
+	# Create chatbot directory if it doesn't exist
+	if not exists(chatbot_dir):
+		makedirs(chatbot_dir)
+	# Create function arguments for multithreading
+	function_args = []
+	for pdf in pdf_list:
+		function_args.append((input_dir, pdf))
+	# Multithreading
+	cpu_threads = min(cpu_count(), args.threads)
+	print("Number of CPU threads:", cpu_threads)
+	# Initialize multithreading pool
+	p = Pool(cpu_count())
+	with p:
+		# Execute function in multiprocess mode
+		p.starmap(extract_and_process, function_args)
+
+	"""
+	for pdf_path in pdf_list:
+		extract_and_process(input_dir, pdf_path)
+	"""
+
