@@ -1,6 +1,6 @@
 import json
 import re
-import pdfppl.snips_nlu_adapter as snips
+import lyrapdf.snips_nlu_adapter as snips
 from os.path import exists
 from os import makedirs
 

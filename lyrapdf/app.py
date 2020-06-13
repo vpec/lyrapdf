@@ -1,15 +1,11 @@
 import sys
-from pdfppl import extractionPyPDF2 as e1
-from pdfppl import extractionTabula as e2
-from pdfppl import post_proc
-#from pdfppl import extraction_mupdf as e3
+from lyrapdf import post_proc
 from os.path import isfile, join, exists, abspath
 from os import listdir, makedirs
-from pdfppl import txt_ext
+from lyrapdf import txt_ext
 from sspipe import p
-from pdfppl import pre_proc
-from pdfppl import outlines
-from pdfppl import metadata
+from lyrapdf import pre_proc
+from lyrapdf import outlines
 import ntpath
 from pdfminer.pdfparser import PDFSyntaxError
 from pdfminer.pdfdocument import PDFTextExtractionNotAllowed

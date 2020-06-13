@@ -1,4 +1,4 @@
-from pdfppl import app
+from lyrapdf import app
 
 if __name__ == '__main__':
     app.run()

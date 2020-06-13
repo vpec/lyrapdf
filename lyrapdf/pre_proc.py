@@ -1,7 +1,7 @@
 import re
 import json
 import matplotlib.pylab as plt
-from pdfppl.ckmeans import ckmeans
+from lyrapdf.ckmeans import ckmeans
 
 #################################################################
 #

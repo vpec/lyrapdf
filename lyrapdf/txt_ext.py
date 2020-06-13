@@ -3,11 +3,8 @@ from pdfminer.converter import HTMLConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from io import BytesIO
-import re
-import time
-from multiprocessing import Process, Manager
 
-import PyPDF2
+
 
 def countRotated(text):
     """Counts the number of ocurrences of '\w\n' in text.
@@ -36,25 +33,6 @@ def process_without_detect_vertical(interpreter, retstr, page, return_dict):
     print("elapsed 2: ", t_elapsed)
     
     return_dict[0] = countRotated(retstr.getvalue().decode("utf-8")) + 1
-
-    
-def convert_pdf_to_txt_pypdf2(path, output_dir, file_name, generate_output = True):
-    _file = open(path, 'rb')
-    read_pdf = PyPDF2.PdfFileReader(_file)
-    number_of_pages = read_pdf.getNumPages()
-
-    _text = ""
-    
-    for page_num in range(read_pdf.numPages):
-        print("Extracting page: ", page_num)
-        try:
-            page = read_pdf.getPage(page_num)
-            _text += page.extractText()
-        except:
-            pass
-
-    _file.close()
-    return _text
 
     
 def extract_pdf_to_html(path, check_rotated = False):
@@ -92,6 +70,12 @@ def extract_pdf_to_html(path, check_rotated = False):
 
     # Variable where text is going to be stored
     _text = b""
+
+    if(check_rotated):
+        # Import necessary libraries for rotation checking
+        import re
+        import time
+        from multiprocessing import Process, Manager
 
     # Iterate through PDF document pages
     for number,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
