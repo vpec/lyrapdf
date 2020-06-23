@@ -287,7 +287,7 @@ def analyze_font_size(text):
 	# Commonly it happens when all blank spaces in document
 	# have been detect as 0 size, so it distorts analysis results
 	if(0 in font_size_dict):
-		print("delete element 0")
+		#print("delete element 0")
 		del font_size_dict[0]
 	# Accumulated percentage threshold for standard/title text
 	percentage = 0.95
@@ -295,8 +295,8 @@ def analyze_font_size(text):
 	percentage_quote = 0.10
 	# Sort keys in dictionary
 	sorted_font_size_dict = sorted(font_size_dict)
-	print(sorted_font_size_dict)
-	print(max(font_size_dict, key=font_size_dict.get))
+	#print(sorted_font_size_dict)
+	#print(max(font_size_dict, key=font_size_dict.get))
 	# Total number of characters in document with size > 0
 	total = sum(font_size_dict.values())
 	percentage_sum = 0

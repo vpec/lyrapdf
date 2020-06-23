@@ -79,7 +79,7 @@ def extract_pdf_to_html(path, check_rotated = False):
 
     # Iterate through PDF document pages
     for number,page in enumerate(PDFPage.get_pages(_file, _pagenos ,password=_password, check_extractable=True)):
-        print("Extracting page: ", number)
+        #print("Extracting page: ", number)
 
         rotating = False
 
@@ -95,8 +95,8 @@ def extract_pdf_to_html(path, check_rotated = False):
         if(check_rotated):
             # Elapsed time
             t_elapsed = time.process_time() - t_start
-            print("elapsed 1: ", t_elapsed)
-            print("countRotated", countRotated(_retstr.getvalue().decode("utf-8")))
+            #print("elapsed 1: ", t_elapsed)
+            #print("countRotated", countRotated(_retstr.getvalue().decode("utf-8")))
             # Number of ocurrences of "rotated characters"
             num_occ = countRotated(_retstr.getvalue().decode("utf-8")) + 1
 
@@ -105,7 +105,7 @@ def extract_pdf_to_html(path, check_rotated = False):
             max_timeout = 60 # seconds
             _timeout = min(max_timeout, _timeout)
             #_timeout = 100000
-            print("timeout: ", _timeout)
+            #print("timeout: ", _timeout)
 
             # Create shared variable
             manager = Manager()
@@ -121,18 +121,18 @@ def extract_pdf_to_html(path, check_rotated = False):
                 # Terminate
                 action_process.terminate()
                 action_process.join()
-                print("Ran out of time")
+                #print("Ran out of time")
                 rotating = True
             else:
                 # Get number of occurences
                 num_occ_default = return_dict[0]
-                print("num_occ_default", num_occ_default)
+                #print("num_occ_default", num_occ_default)
                 # Check if page needs to be rotated
                 if(num_occ_default / num_occ > 5 and num_occ_default > 100):
                     rotating = True
 
             if(rotating):
-                print("Rotating")
+                #print("Rotating")
                 # Clean buffer
                 _retstr.truncate(0)
                 _retstr.seek(0)
@@ -150,7 +150,7 @@ def extract_pdf_to_html(path, check_rotated = False):
         _retstr_default.truncate(0)
         _retstr_default.seek(0)
 
-    print("Extraction finished")
+    #print("Extraction finished")
     _text += b'\n\n'
 
     # Close files

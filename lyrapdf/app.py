@@ -82,7 +82,8 @@ def process_md(text_md):
 		)
 	return processed_text_md
 
-def process(text, output_dir, file_name):
+
+def process(text, output_dir, file_name, json_output):
 	"""Processes a document in html format (originally a pdf) so
 		at the end it is converted to JSON, reconstructing the
 		semantic structure of the titles and its contents. This 
@@ -93,29 +94,35 @@ def process(text, output_dir, file_name):
 		output_dir (string): path where the output files are
 			going to be stored.
 		file_name (string): name of the document.
+		json_output (bool): True if output format is JSON,
+			False if it is MarkDown.
 	"""
+	
 	# Process HTML
 	processed_text_html = process_html(text)
 	# Write processed HTML output 
-	pre_proc.create_text_file(output_dir + "/html_" + file_name + "_pre.html", processed_text_html)
+	#pre_proc.create_text_file(output_dir + "/html_" + file_name + "_pre.html", processed_text_html)
 
 	# Convert HMTL to MD
 	text_md = pre_proc.extract_text_md(processed_text_html)
 
 	# Process MD
 	processed_text_md = process_md(text_md)
-	# Write processed MD output 
-	pre_proc.create_text_file(output_dir + "/" + file_name + "_pre.md", processed_text_md)
 	
-	# Convert MD to JSON
-	processed_json = pre_proc.convert_md_to_json(processed_text_md, file_name)
-	# Write processed JSON output 
-	pre_proc.create_binary_file(output_dir + "/" + file_name + "_pre.json", processed_json)
+	if(json_output):
+		# Convert MD to JSON
+		processed_json = pre_proc.convert_md_to_json(processed_text_md, file_name)
+		# Write processed JSON output 
+		pre_proc.create_binary_file(output_dir + "/" + file_name + ".json", processed_json)
+	else:
+		# Write processed MD output 
+		pre_proc.create_text_file(output_dir + "/" + file_name + ".md", processed_text_md)
+
 
 
 	
 
-def extract_and_process(input_dir, pdf_path):
+def extract_and_process(input_dir, pdf_path, json_output):
 	"""Extracts a PDF document to HTML format, processing it so
 		at the end it is converted to JSON, reconstructing the
 		semantic structure of the titles and its contents. This 
@@ -125,6 +132,8 @@ def extract_and_process(input_dir, pdf_path):
 		input_dir (string): path of the directory where the
 			document is stored.
 		pdf_path (string): path where pdf document is stored.
+		json_output (bool): True if output format is JSON,
+			False if it is MarkDown.
 	"""
 	print('Extracting text from: ', pdf_path)
 	output_dir = input_dir + "/output"
@@ -132,10 +141,10 @@ def extract_and_process(input_dir, pdf_path):
 		# Extract PDF to HTML format
 		extracted_text = txt_ext.extract_pdf_to_html(pdf_path)
 		# Write raw HTML
-		pre_proc.create_text_file(output_dir + "/raw_" + path_leaf(pdf_path) + "_post.html", extracted_text)
+		#pre_proc.create_text_file(output_dir + "/raw_" + path_leaf(pdf_path) + ".html", extracted_text)
 		
 		print("Extraction finished: "+ pdf_path + ", starting processing")
-		process(extracted_text, output_dir, path_leaf(pdf_path))
+		process(extracted_text, output_dir, path_leaf(pdf_path), json_output)
 
 	except PDFSyntaxError:
 		print("PDFSyntaxError: Is this really a PDF? ", pdf_path)
@@ -174,9 +183,22 @@ def run():
 	parser = argparse.ArgumentParser(description='Extract text from a PDF and convert to JSON, preserving its structure.')
 	parser.add_argument('path', metavar='path', type=str,
                     help='the path to PDF file or directory')
+	parser.add_argument('--format', metavar='format', type=str, default="json",
+                    help='output format: "json" or "md" (markdown)')
 	parser.add_argument('--threads', metavar='threads', type=int, default=1,
                     help='number of threads used for processing')
 	args = parser.parse_args()
+
+	if(args.format == "json"):
+		print("Output format: JSON")
+		json_output = True
+	elif(args.format == "md" or args.format == "markdown"):
+		print("Output format: MarkDown")
+		json_output = False
+	else:
+		print("Unknown output format: ", args.format)
+		print("Possible output formats: \"json\", \"md\"")
+		sys.exit(1)
 
 	# Get directory where are stored pdfs to be processed
 	input_dir = abspath(args.path)
@@ -195,7 +217,7 @@ def run():
 	# Create function arguments for multithreading
 	function_args = []
 	for pdf in pdf_list:
-		function_args.append((input_dir, pdf))
+		function_args.append((input_dir, pdf, json_output))
 	# Multithreading
 	cpu_threads = min(cpu_count(), args.threads)
 	print("Number of CPU threads:", cpu_threads)
@@ -207,5 +229,5 @@ def run():
 			p.starmap(extract_and_process, function_args)
 	else:
 		for pdf_path in pdf_list:
-			extract_and_process(input_dir, pdf_path)
+			extract_and_process(input_dir, pdf_path, json_output)
 
