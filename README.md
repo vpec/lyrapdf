@@ -1,4 +1,10 @@
-# pdfppl: PDF Preprocess Pipeline
+# Lyrapdf: convert a PDF to JSON or MarkDown
+
+Lyrapdf is a project based on [PDFMiner.Six](https://github.com/pdfminer/pdfminer.six),
+which extracts text from a PDF document and processes it so the original
+structure from the text is reconstructed.
+
+The output format can be MarkDown or JSON.
 
 ## Getting started
 
@@ -10,23 +16,25 @@ sudo apt install python3-pip
 Also, some libraries must be installed:
 
 ```
-pip3 install PyPDF2
-pip3 install tabula-py
+pip install pdfminer.six
+pip install sspipe
 ```
-For p2ttk
+
+This repository also includes a Natural Lenguage Understanding proof of concept
+in *docbot* directory, which uses the following dependencies:
+
 ```
-pip3 install sspipe
-pip3 install pdfminer
-pip3 install nltk
-pip3 install pymongo
+pip install snips-nlu
 ```
 
 ## Usage
 
 From git root directory, run:
 ```
-python3 -m pdfppl pdfppl/resources
+python3 -m lyrapdf folder/with/pdfs
 ```
 
-## Documentation
-http://www.blog.pythonlibrary.org/2018/05/03/exporting-data-from-pdfs-with-python/
+## About
+
+This tool was made as a Bachelor’s Degree Final Project in 
+Computer Science at Universidad de Zaragoza.

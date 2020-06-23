@@ -279,6 +279,8 @@ def analyze_font_size(text):
 
 	# Plot data
 	#plt.hist(data)
+	#plt.ylabel('Number of characters')
+	#plt.xlabel('Font size')
 	#plt.show()
 
 	# Delete font size 0 if it exists in dictionary

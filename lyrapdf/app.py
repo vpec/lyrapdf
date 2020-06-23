@@ -47,19 +47,17 @@ def process_html(raw_html_text):
 		)
 	return processed_text_html
 
-def process_md(processed_text_html):
-	"""Processes html text and converts it to markdown, representing
-		as titles text originally large, so it reconstructs the 
+def process_md(text_md):
+	"""Processes document as MarkDown text, so it reconstructs the 
 		title-content structure of the document.
 
 	Args:
-		processed_text_html (string): html text to be processed.
+		processed_text_html (string): markdown text to be processed.
 
 	Returns:
 		string: markdown text once is processed.
 	"""
-	processed_text_md = ( pre_proc.extract_text_md(processed_text_html)
-														| p(pre_proc.replace_br)
+	processed_text_md = ( pre_proc.replace_br(text_md)
 														| p(pre_proc.remove_false_titles)
 														| p(pre_proc.remove_blank_lines)
 														| p(pre_proc.replace_cid)
@@ -101,22 +99,19 @@ def process(text, output_dir, file_name):
 	# Write processed HTML output 
 	pre_proc.create_text_file(output_dir + "/html_" + file_name + "_pre.html", processed_text_html)
 
+	# Convert HMTL to MD
+	text_md = pre_proc.extract_text_md(processed_text_html)
+
 	# Process MD
-	processed_text_md = process_md(processed_text_html)
+	processed_text_md = process_md(text_md)
 	# Write processed MD output 
-	pre_proc.create_text_file(output_dir + "/" + file_name + "_post.md", processed_text_md)
+	pre_proc.create_text_file(output_dir + "/" + file_name + "_pre.md", processed_text_md)
 	
-	# Process JSON
+	# Convert MD to JSON
 	processed_json = pre_proc.convert_md_to_json(processed_text_md, file_name)
 	# Write processed JSON output 
 	pre_proc.create_binary_file(output_dir + "/" + file_name + "_pre.json", processed_json)
 
-	# Feed chatbot
-	dataset_dir  = "chatbot"
-	# Create general intent folder
-	if not exists(dataset_dir + "/general"):
-		makedirs(dataset_dir + "/general")
-	post_proc.feed_chatbot(processed_json, dataset_dir)
 
 	
 
@@ -148,7 +143,7 @@ def extract_and_process(input_dir, pdf_path):
 		print(e)
 
 
-def get_listPDF(input_dir):
+def get_file_list(input_dir):
 	"""Returns a list of paths. Each one is a file stored in
 		input_dir directory.
 
@@ -162,22 +157,11 @@ def get_listPDF(input_dir):
 	return file_paths
 
 
-def run_test():
-	input_dir = "/home/victor/pdfppl/pdfppl/resources/raw2"
-	output_dir = "/home/victor/pdfppl/pdfppl/resources/raw2/output"
-	raw_text_list, archivos = get_listPDF(input_dir)
-	for pdf_path in raw_text_list:
-			print('Processing raw text from: ', pdf_path)
-			_file = open(pdf_path, 'r')
-			text = _file.read()
-			_file.close()
-			process(text, output_dir, path_leaf(pdf_path))
-
 def run_chatbot():
 	if(len(sys.argv) == 2):
 		input_dir = abspath(sys.argv[1]) # Directory where are stored JSON to be processed
 		dataset_dir  = "chatbot"
-		json_list = get_listPDF(input_dir)
+		json_list = get_file_list(input_dir)
 		# Create general intent folder
 		if not exists(dataset_dir + "/general"):
 			makedirs(dataset_dir + "/general")
@@ -197,7 +181,7 @@ def run():
 	# Get directory where are stored pdfs to be processed
 	input_dir = abspath(args.path)
 	# Get list of pdf from input directory
-	pdf_list = get_listPDF(input_dir)
+	pdf_list = get_file_list(input_dir)
 	# Define ouptut directory
 	output_dir = input_dir + "/output"
 	# Create output directory if it doesn't exist
@@ -215,14 +199,13 @@ def run():
 	# Multithreading
 	cpu_threads = min(cpu_count(), args.threads)
 	print("Number of CPU threads:", cpu_threads)
-	# Initialize multithreading pool
-	p = Pool(cpu_count())
-	with p:
-		# Execute function in multiprocess mode
-		p.starmap(extract_and_process, function_args)
-
-	"""
-	for pdf_path in pdf_list:
-		extract_and_process(input_dir, pdf_path)
-	"""
+	if(cpu_threads > 1):
+		# Initialize multithreading pool
+		p = Pool(cpu_count())
+		with p:
+			# Execute function in multiprocess mode
+			p.starmap(extract_and_process, function_args)
+	else:
+		for pdf_path in pdf_list:
+			extract_and_process(input_dir, pdf_path)
 
