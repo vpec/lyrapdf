@@ -43,7 +43,7 @@ The original document is processed by a pipeline composed by multiple
 processing steps until reaching the final output format: JSON. It's also
 possible to get the output file in MarkDown format.
 
-![Pipeline diagram](https://ibb.co/N9YVBX8)
+![Pipeline diagram](https://i.ibb.co/48Nmrc6/TFG-chart-en.png)
 
 Almost all processing is based on the use of regular expressions. More details can
 be found looking at the code, as each small step is contained inside a method.
@@ -55,9 +55,9 @@ be found looking at the code, as each small step is contained inside a method.
 It removes unnecessary elements as page numbers. This is made thanks to the position
 inside the page provided by the HTML format.
 
-![Document before page number removal](https://ibb.co/mDMMKcL)
+![Document before page number removal](https://i.ibb.co/yfbbCQw/html-raw.png)
 
-![Document after page number removal](https://ibb.co/VvGYCh6)
+![Document after page number removal](https://i.ibb.co/brV5vyt/html.png)
 
 
 ### Smart text relevance
@@ -73,7 +73,7 @@ thanks to a deterministic and optimal version of the K-means algorithm.
 
 The result of this process is a MarkDown document.
 
-![Document after conversion to MarkDown](https://ibb.co/JzbCWBJ)
+![Document after conversion to MarkDown](https://i.ibb.co/jLxH96X/md-raw.png)
 
 
 ### Paragraph debugging
@@ -81,7 +81,7 @@ The result of this process is a MarkDown document.
 Text is debugged in order to get paragraphs merged into one line.
 Some other small processing is done to remove defects from the text.
 
-![Debugged MarkDown text](https://ibb.co/JHtPwrc)
+![Debugged MarkDown text](https://i.ibb.co/4ptxn4F/md.png)
 
 ### Structured format
 
@@ -89,7 +89,8 @@ It is possible to obtain an output in JSON structured format, from a
 conversion from MarkDown, where the level of relevance of the text
 is indicated (1 is the most important, 7 is the standard text).
 
-![JSON output file](https://ibb.co/b6Qmbh1)
+![JSON output file](https://i.ibb.co/XWjLYBX/ejemplo-json4.png)
+
 
 ## Usage examples
 
