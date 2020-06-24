@@ -106,18 +106,6 @@ From git root directory, run:
 python3 -m lyrapdf folder/with/pdfs --threads 4
 ```
 
-I want to extract, process and convert to JSON text from PDFs inside a directory, using 4 CPU threads.
-From git root directory, run:
-```
-python3 -m lyrapdf folder/with/pdfs --threads 4
-```
-
-I want to extract, process and convert to JSON text from PDFs inside a directory, using 4 CPU threads.
-From git root directory, run:
-```
-python3 -m lyrapdf folder/with/pdfs --threads 4
-```
-
 I want to extract, process and convert to MARKDOWN text from PDFs inside a directory, using 4 CPU threads.
 From git root directory, run:
 ```
