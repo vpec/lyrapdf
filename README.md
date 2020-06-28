@@ -1,6 +1,6 @@
-# Lyrapdf: convert a PDF to JSON or MarkDown
+# LyraPDF: convert a PDF to JSON or MarkDown
 
-Lyrapdf is a project based on [PDFMiner.Six](https://github.com/pdfminer/pdfminer.six),
+LyraPDF is a project based on [pdfminer.six](https://github.com/pdfminer/pdfminer.six),
 which extracts text from a PDF document and processes it so that the original
 structure from the text is reconstructed.
 
