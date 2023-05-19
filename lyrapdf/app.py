@@ -150,6 +150,8 @@ def extract_and_process(input_dir, pdf_path, json_output):
 		print("PDFSyntaxError: Is this really a PDF? ", pdf_path)
 	except PDFTextExtractionNotAllowed as e:
 		print(e)
+	except Exception as e:
+		print(e)
 
 
 def get_file_list(input_dir):
