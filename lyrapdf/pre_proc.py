@@ -301,6 +301,7 @@ def analyze_font_size(text):
 	total = sum(font_size_dict.values())
 	percentage_sum = 0
 	max_quote = 0
+	font_threshold = 0
 	i = 0 # Keep track of the index
 	for key in sorted_font_size_dict:
 		# Update accumulated percentage
